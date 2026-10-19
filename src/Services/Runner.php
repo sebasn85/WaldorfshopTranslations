@@ -22,7 +22,7 @@ class Runner
             if ($id <= 0) { throw new \RuntimeException('Pilotartikel fehlt.'); }
             foreach ($this->gateway->candidates() as $candidate) {
                 if ($candidate['item_id'] === $id) {
-                    $engine = new TranslationEngine($this->store, $this->gateway, $this->settings());
+                    $engine = pluginApp(TranslationEngine::class, [$this->store, $this->gateway, $this->settings()]);
                     $result = $engine->run($candidate, $this->http->option('writesAllowed', '0') === '1');
                     $this->store->put('last-result', $result + ['at' => gmdate('c'), 'kind' => 'pilot']);
                     return $result;
@@ -39,7 +39,7 @@ class Runner
             foreach ($this->gateway->candidates() as $candidate) {
                 $job = $this->store->get('job:' . $candidate['item_id']);
                 if ($job && in_array($job['status'], ['blocked', 'review_required'], true)) { continue; }
-                $engine = new TranslationEngine($this->store, $this->gateway, $this->settings());
+                $engine = pluginApp(TranslationEngine::class, [$this->store, $this->gateway, $this->settings()]);
                 $result = $engine->run($candidate, true);
                 $this->store->put('last-result', $result + ['at' => gmdate('c'), 'kind' => 'automatic']);
                 return $result; // One article per cron: bounded runtime, at most 100/month.
