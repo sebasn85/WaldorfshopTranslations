@@ -9,5 +9,5 @@
   "author": "Universnatur GmbH",
   "serviceProvider": "WaldorfshopTranslations\\Providers\\TranslationServiceProvider",
   "runOnBuild": ["WaldorfshopTranslations\\Migrations\\CreateState"],
-  "dependencies": {"guzzlehttp/guzzle": "7.9.3"}
+  "dependencies": {"guzzlehttp/guzzle": "7.15.5"}
 }
