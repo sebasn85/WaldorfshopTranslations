@@ -1,0 +1,59 @@
+[
+  {
+    "tab": "Übersetzungen",
+    "key": "automaticEnabled",
+    "label": "Automatik aktiv",
+    "type": "dropdown",
+    "default": "0",
+    "possibleValues": {
+      "0": "Aus",
+      "1": "Ein"
+    }
+  },
+  {
+    "tab": "Übersetzungen",
+    "key": "writesAllowed",
+    "label": "Texte und Tags speichern",
+    "type": "dropdown",
+    "default": "0",
+    "possibleValues": {
+      "0": "Vorschau",
+      "1": "Speichern"
+    }
+  },
+  {
+    "tab": "Übersetzungen",
+    "key": "pilotItemId",
+    "label": "Artikel-ID für Einzeltest",
+    "type": "text",
+    "default": "10009957"
+  },
+  {
+    "tab": "Übersetzungen",
+    "key": "operatorUserId",
+    "label": "API-Benutzer-ID für Steuerung",
+    "type": "text",
+    "default": "197"
+  },
+  {
+    "tab": "Übersetzungen",
+    "key": "plentyUsername",
+    "label": "Plenty API-Benutzer",
+    "type": "text",
+    "default": "waldorfshop_translation"
+  },
+  {
+    "tab": "Übersetzungen",
+    "key": "plentyPassword",
+    "label": "Plenty API-Passwort",
+    "type": "password",
+    "default": ""
+  },
+  {
+    "tab": "Übersetzungen",
+    "key": "deeplKey",
+    "label": "DeepL API Pro Schlüssel",
+    "type": "password",
+    "default": ""
+  }
+]
