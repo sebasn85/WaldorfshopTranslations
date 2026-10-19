@@ -9,8 +9,11 @@ class TranslationController extends Controller
     private function assertOperator(AuthorizedUserRepositoryContract $users, HttpClient $http): void
     {
         $authorized = $users->getCurrentAuthorizedUser();
-        if (!$authorized || !$authorized->user || (int)$authorized->user->id !== (int)$http->option('operatorUserId', '197')) {
-            throw new \RuntimeException('Kein Zugriff auf die Übersetzungssteuerung.');
+        $user = $authorized ? $authorized->user : null;
+        $userId = (int)(is_array($user) ? ($user['id'] ?? 0) : ($user ? $user->id : 0));
+        $expectedId = (int)$http->option('operatorUserId', '197');
+        if ($userId <= 0 || $expectedId <= 0 || $userId !== $expectedId) {
+            throw new \RuntimeException('Kein Zugriff auf die Übersetzungssteuerung (Benutzer-ID ' . $userId . ', erwartet ' . $expectedId . ').');
         }
     }
     public function status(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner)
