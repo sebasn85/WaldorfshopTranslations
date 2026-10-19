@@ -1,0 +1,13 @@
+name: Translation plugin checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  php:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: git ls-files '*.php' | xargs -n 1 php -l
+      - name: Worker regression tests
+        run: php tests/run.php
