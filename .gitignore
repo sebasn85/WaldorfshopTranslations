@@ -1,0 +1,7 @@
+.env
+config.local.json
+node_modules/
+tools/php-runtime/
+vendor/
+data/
+*.zip
