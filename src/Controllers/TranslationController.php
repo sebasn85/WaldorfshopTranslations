@@ -6,7 +6,7 @@ use WaldorfshopTranslations\Services\Runner;
 use WaldorfshopTranslations\Services\HttpClient;
 class TranslationController extends Controller
 {
-    private function authorize(AuthorizedUserRepositoryContract $users, HttpClient $http): void
+    private function assertOperator(AuthorizedUserRepositoryContract $users, HttpClient $http): void
     {
         $authorized = $users->getCurrentAuthorizedUser();
         if (!$authorized || !$authorized->user || (int)$authorized->user->id !== (int)$http->option('operatorUserId', '197')) {
@@ -14,7 +14,7 @@ class TranslationController extends Controller
         }
     }
     public function status(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner)
-    { $this->authorize($users, $http); return $runner->status(); }
+    { $this->assertOperator($users, $http); return $runner->status(); }
     public function pilot(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner)
-    { $this->authorize($users, $http); return $runner->pilot(); }
+    { $this->assertOperator($users, $http); return $runner->pilot(); }
 }
