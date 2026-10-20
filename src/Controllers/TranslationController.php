@@ -16,7 +16,7 @@ class TranslationController extends Controller
         }
         return $id > 0 ? $id : $userId;
     }
-    private function assertOperator(AuthorizedUserRepositoryContract $users, HttpClient $http, ?UserRepositoryContract $currentUsers): void
+    private function assertOperator(AuthorizedUserRepositoryContract $users, HttpClient $http, UserRepositoryContract $currentUsers): void
     {
         $authorized = $users->getCurrentAuthorizedUser();
         $authorizedData = $authorized ? $authorized->toArray() : [];
@@ -27,7 +27,7 @@ class TranslationController extends Controller
             throw new \RuntimeException('Widersprüchlicher Plenty-Anmeldekontext.');
         }
         if ($nestedId > 0) { $userId = $nestedId; }
-        $current = $currentUsers ? $currentUsers->getCurrentUser() : null;
+        $current = $currentUsers->getCurrentUser();
         $currentId = $current ? $this->identityId($current->toArray()) : 0;
         if ($userId > 0 && $currentId > 0 && $userId !== $currentId) {
             throw new \RuntimeException('Widersprüchlicher Plenty-API-Benutzer.');
@@ -35,11 +35,11 @@ class TranslationController extends Controller
         if ($currentId > 0) { $userId = $currentId; }
         $expectedId = (int)$http->option('operatorUserId', '197');
         if ($userId <= 0 || $expectedId <= 0 || $userId !== $expectedId) {
-            throw new \RuntimeException('Kein Zugriff auf die Übersetzungssteuerung (Benutzer-ID ' . $userId . ', erwartet ' . $expectedId . '; Felder ' . implode(',', is_array($user) ? array_keys($user) : []) . '; Kontextfelder ' . implode(',', array_keys($authorizedData)) . ').');
+            throw new \RuntimeException('Kein Zugriff auf die Übersetzungssteuerung (Benutzer-ID ' . $userId . ', erwartet ' . $expectedId . '; Felder ' . implode(',', is_array($user) ? array_keys($user) : []) . '; Kontextfelder ' . implode(',', array_keys($authorizedData)) . '; API-Felder ' . implode(',', $current ? array_keys($current->toArray()) : []) . ').');
         }
     }
-    public function status(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, ?UserRepositoryContract $currentUsers = null)
+    public function status(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
     { $this->assertOperator($users, $http, $currentUsers); return $runner->status(); }
-    public function pilot(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, ?UserRepositoryContract $currentUsers = null)
+    public function pilot(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
     { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot(); }
 }
