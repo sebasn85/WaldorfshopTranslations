@@ -8,10 +8,23 @@ class HttpClient
     private $library;
     private $config;
     private $token = '';
+    private $settings;
     public function __construct(LibraryCallContract $library, ConfigRepository $config)
     { $this->library = $library; $this->config = $config; }
     public function option(string $key, $default = '')
     { $value = $this->config->get('WaldorfshopTranslations.' . $key); return $value === null || $value === '' ? $default : $value; }
+    public function settings(): array
+    {
+        if ($this->settings === null) {
+            $values = [];
+            foreach (['targetLanguages','englishVariant','portugueseVariant','chineseVariant','readyTagId','reviewTagId','glossaryMode','glossaryId','deeplPlan','plentyUsername','plentyPassword','deeplKey','operatorUserId','plentyBaseUrl','translationContext','monthlyItems','monthlyCharacters'] as $key) {
+                $value = $this->config->get('WaldorfshopTranslations.' . $key);
+                if ($value !== null) { $values[$key] = $value; }
+            }
+            $this->settings = Configuration::parse($values);
+        }
+        return $this->settings;
+    }
     public function request(string $service, string $method, string $path, array $body = [], array $query = [])
     {
         if ($service === 'plenty' && $path !== '/rest/login' && !$this->token) {
@@ -20,7 +33,7 @@ class HttpClient
             $this->token = $login['access_token'];
         }
         $authorization = $service === 'deepl' ? 'DeepL-Auth-Key ' . $this->option('deeplKey') : ($this->token ? 'Bearer ' . $this->token : '');
-        $result = $this->library->call('WaldorfshopTranslations::http', ['service' => $service, 'method' => $method, 'path' => $path, 'body' => $body, 'query' => $query, 'authorization' => $authorization]);
+        $result = $this->library->call('WaldorfshopTranslations::http', ['plentyOrigin' => $this->settings()['plenty_origin'], 'deeplOrigin' => $this->settings()['deepl_origin'], 'service' => $service, 'method' => $method, 'path' => $path, 'body' => $body, 'query' => $query, 'authorization' => $authorization]);
         if (!is_array($result) || ($result['ok'] ?? false) !== true) {
             throw new \RuntimeException($service . ': API-Aufruf fehlgeschlagen (HTTP ' . (int)($result['status'] ?? 0) . ').');
         }
