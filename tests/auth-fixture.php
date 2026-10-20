@@ -6,6 +6,9 @@ namespace Plenty\Plugin {
 namespace Plenty\Modules\Authorization\Contracts {
     abstract class AuthorizedUserRepositoryContract { abstract public function getCurrentAuthorizedUser(); }
 }
+namespace Plenty\Modules\User\Contracts {
+    abstract class UserRepositoryContract { abstract public function getCurrentUser(); }
+}
 namespace {
     require __DIR__ . '/../src/Services/HttpClient.php';
     require __DIR__ . '/../src/Services/Runner.php';
@@ -22,6 +25,12 @@ namespace {
         public $user;
         public function __construct(array $data) { $this->data = $data; $this->user = $data['user'] ?? null; }
         public function toArray(): array { return $this->data; }
+    }
+    class CurrentUserFixture extends \Plenty\Modules\User\Contracts\UserRepositoryContract
+    {
+        private $data;
+        public function __construct($data = null) { $this->data = $data; }
+        public function getCurrentUser() { return $this->data === null ? null : new AuthModelFixture($this->data); }
     }
     class AuthHttpFixture extends \WaldorfshopTranslations\Services\HttpClient
     {
@@ -41,7 +50,7 @@ namespace {
             $cases['authorized operator identity format ' . $i] = function() use ($data) {
                 $controller = new \WaldorfshopTranslations\Controllers\TranslationController();
                 $runner = new AuthRunnerFixture();
-                expect($controller->pilot(new AuthRepositoryFixture($data), new AuthHttpFixture(), $runner)['status'] === 'allowed');
+                expect($controller->pilot(new AuthRepositoryFixture($data), new AuthHttpFixture(), $runner, new CurrentUserFixture())['status'] === 'allowed');
                 expect($runner->runs === 1);
             };
         }
@@ -49,10 +58,20 @@ namespace {
             $cases['untrusted operator identity blocked before pilot ' . $i] = function() use ($data) {
                 $controller = new \WaldorfshopTranslations\Controllers\TranslationController();
                 $runner = new AuthRunnerFixture();
-                raises(function() use ($controller, $runner, $data) { $controller->pilot(new AuthRepositoryFixture($data), new AuthHttpFixture(), $runner); });
+                raises(function() use ($controller, $runner, $data) { $controller->pilot(new AuthRepositoryFixture($data), new AuthHttpFixture(), $runner, new CurrentUserFixture()); });
                 expect($runner->runs === 0);
             };
         }
+        $cases['API current user authorizes when backend context is empty'] = function() {
+            $controller = new \WaldorfshopTranslations\Controllers\TranslationController(); $runner = new AuthRunnerFixture();
+            expect($controller->pilot(new AuthRepositoryFixture(null), new AuthHttpFixture(), $runner, new CurrentUserFixture(['id' => 197]))['status'] === 'allowed');
+            expect($runner->runs === 1);
+        };
+        $cases['conflicting API and backend identities reject pilot'] = function() {
+            $controller = new \WaldorfshopTranslations\Controllers\TranslationController(); $runner = new AuthRunnerFixture();
+            raises(function() use ($controller, $runner) { $controller->pilot(new AuthRepositoryFixture(['user' => ['id' => 197]]), new AuthHttpFixture(), $runner, new CurrentUserFixture(['id' => 6])); });
+            expect($runner->runs === 0);
+        };
         return $cases;
     }
 }
