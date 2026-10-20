@@ -33,13 +33,15 @@ class TranslationController extends Controller
             throw new \RuntimeException('Widersprüchlicher Plenty-API-Benutzer.');
         }
         if ($currentId > 0) { $userId = $currentId; }
-        $expectedId = (int)$http->option('operatorUserId', '197');
+        $expectedId = (int)$http->option('operatorUserId', '0');
         if ($userId <= 0 || $expectedId <= 0 || $userId !== $expectedId) {
-            throw new \RuntimeException('Version 0.1.2: Kein Zugriff auf die Übersetzungssteuerung (Benutzer-ID ' . $userId . ', erwartet ' . $expectedId . '; Felder ' . implode(',', is_array($user) ? array_keys($user) : []) . '; Kontextfelder ' . implode(',', array_keys($authorizedData)) . '; API-Felder ' . implode(',', $current ? array_keys($current->toArray()) : []) . ').');
+            throw new \RuntimeException('Kein Zugriff auf die Übersetzungssteuerung. API-Benutzer-ID in der Plugin-Konfiguration prüfen.');
         }
     }
+    public function configurationCheck(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->configurationCheck() + ['release' => '0.2.0']; }
     public function status(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->status() + ['release' => '0.1.2']; }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->status() + ['release' => '0.2.0']; }
     public function pilot(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot() + ['release' => '0.1.2']; }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot() + ['release' => '0.2.0']; }
 }
