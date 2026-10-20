@@ -35,11 +35,11 @@ class TranslationController extends Controller
         if ($currentId > 0) { $userId = $currentId; }
         $expectedId = (int)$http->option('operatorUserId', '197');
         if ($userId <= 0 || $expectedId <= 0 || $userId !== $expectedId) {
-            throw new \RuntimeException('Kein Zugriff auf die Übersetzungssteuerung (Benutzer-ID ' . $userId . ', erwartet ' . $expectedId . '; Felder ' . implode(',', is_array($user) ? array_keys($user) : []) . '; Kontextfelder ' . implode(',', array_keys($authorizedData)) . '; API-Felder ' . implode(',', $current ? array_keys($current->toArray()) : []) . ').');
+            throw new \RuntimeException('Version 0.1.1: Kein Zugriff auf die Übersetzungssteuerung (Benutzer-ID ' . $userId . ', erwartet ' . $expectedId . '; Felder ' . implode(',', is_array($user) ? array_keys($user) : []) . '; Kontextfelder ' . implode(',', array_keys($authorizedData)) . '; API-Felder ' . implode(',', $current ? array_keys($current->toArray()) : []) . ').');
         }
     }
     public function status(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->status(); }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->status() + ['release' => '0.1.1']; }
     public function pilot(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot(); }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot() + ['release' => '0.1.1']; }
 }
