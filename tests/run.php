@@ -58,6 +58,8 @@ function fixture()
     return [$store,$gateway,new Engine($store,$gateway,$settings),$candidate,$settings];
 }
 $tests=[];
+require __DIR__ . '/auth-fixture.php';
+$tests += authBoundaryTests();
 $tests['preview never writes or removes tags']=function(){
     [$s,$g,$e,$c]=fixture();$result=$e->run($c,false);
     expect($result['status']==='prepared');expect($g->calls===20);expect(!$g->writes);expect($g->ready===[420,421]);expect($s->get('baseline:42')===null);
