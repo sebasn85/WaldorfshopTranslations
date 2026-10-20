@@ -132,6 +132,11 @@ $tests['rejected paid output is retained but never applied or paid twice']=funct
     $job=$s->get('job:42');expect($job['status']==='blocked');expect($job['validation_error']['field']==='description');expect(strpos($job['validation_error']['target'],'91')!==false);
     raises(function()use($e,$c){$e->run($c,true);});expect($g->calls===$calls);expect(!$g->writes);
 };
+$tests['encoded HTML apostrophes never count as product numbers']=function(){
+    Engine::validate('<p>Firma 1995, Flöte 440 Hz</p>', '<p>L&#x27;entreprise 1995, flûte 440 Hz</p>', 'description');
+    Engine::validate('<p>Firma 1995</p>', '<p>L&#39;entreprise &#49;995</p>', 'description');
+    raises(function(){Engine::validate('<p>Firma 1995, Flöte 440 Hz</p>', '<p>L&#x27;entreprise 1996, flûte 440 Hz</p>', 'description');});
+};
 $failed=0;
 foreach($tests as $name=>$test){try{$test();echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: ".$e->getMessage()."\n";}}
 echo count($tests)." tests; $failed failures\n";
