@@ -137,6 +137,8 @@ $tests['encoded HTML apostrophes never count as product numbers']=function(){
     Engine::validate('<p>Firma 1995</p>', '<p>L&#39;entreprise &#49;995</p>', 'description');
     raises(function(){Engine::validate('<p>Firma 1995, Flöte 440 Hz</p>', '<p>L&#x27;entreprise 1996, flûte 440 Hz</p>', 'description');});
 };
+require __DIR__ . '/configuration-fixture.php';
+$tests += configurationTests();
 $failed=0;
 foreach($tests as $name=>$test){try{$test();echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: ".$e->getMessage()."\n";}}
 echo count($tests)." tests; $failed failures\n";
