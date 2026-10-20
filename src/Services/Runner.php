@@ -49,6 +49,6 @@ class Runner
     }
     public function status(): array
     {
-        return ['automatic' => $this->http->option('automaticEnabled', '0') === '1', 'writes' => $this->http->option('writesAllowed', '0') === '1', 'pilot_item_id' => (int)$this->http->option('pilotItemId', '10009957'), 'last_result' => $this->store->get('last-result'), 'lock' => $this->store->get('global-lock'), 'budget' => $this->store->get('budget:' . gmdate('Y-m'))];
+        return ['automatic' => $this->http->option('automaticEnabled', '0') === '1', 'writes' => $this->http->option('writesAllowed', '0') === '1', 'pilot_item_id' => (int)$this->http->option('pilotItemId', '10009957'), 'last_result' => $this->store->get('last-result'), 'pilot_job' => $this->store->get('job:' . (int)$this->http->option('pilotItemId', '10009957')), 'lock' => $this->store->get('global-lock'), 'budget' => $this->store->get('budget:' . gmdate('Y-m'))];
     }
 }
