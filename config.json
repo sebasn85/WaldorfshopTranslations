@@ -1,59 +1,337 @@
-[
-  {
-    "tab": "Übersetzungen",
-    "key": "automaticEnabled",
-    "label": "Automatik aktiv",
-    "type": "dropdown",
-    "default": "0",
-    "possibleValues": {
-      "0": "Aus",
-      "1": "Ein"
+{
+  "formatVersion": 1,
+  "menu": {
+    "operation": {
+      "label": "Config.operation",
+      "formFields": {
+        "automaticEnabled": {
+          "type": "selectBox",
+          "required": false,
+          "label": "Config.automaticEnabled",
+          "options": {
+            "defaultValue": "0",
+            "selectBoxValues": [
+              {
+                "value": "0",
+                "caption": "Config.automaticEnabled_0"
+              },
+              {
+                "value": "1",
+                "caption": "Config.automaticEnabled_1"
+              }
+            ]
+          }
+        },
+        "writesAllowed": {
+          "type": "selectBox",
+          "required": false,
+          "label": "Config.writesAllowed",
+          "options": {
+            "defaultValue": "0",
+            "selectBoxValues": [
+              {
+                "value": "0",
+                "caption": "Config.writesAllowed_0"
+              },
+              {
+                "value": "1",
+                "caption": "Config.writesAllowed_1"
+              }
+            ]
+          }
+        },
+        "pilotItemId": {
+          "type": "inputText",
+          "required": false,
+          "label": "Config.pilotItemId",
+          "options": {
+            "defaultValue": "0"
+          }
+        },
+        "monthlyItems": {
+          "type": "inputNumber",
+          "required": false,
+          "label": "Config.monthlyItems",
+          "options": {
+            "defaultValue": "100"
+          }
+        },
+        "monthlyCharacters": {
+          "type": "inputNumber",
+          "required": false,
+          "label": "Config.monthlyCharacters",
+          "options": {
+            "defaultValue": "250000"
+          }
+        }
+      }
+    },
+    "languages": {
+      "label": "Config.languages",
+      "formFields": {
+        "targetLanguages": {
+          "type": "multiCheckBox",
+          "required": false,
+          "label": "Config.targetLanguages",
+          "options": {
+            "defaultValue": "en,fr,it,es,nl",
+            "checkBoxValues": [
+              {
+                "value": "en",
+                "caption": "Config.targetLanguages_en"
+              },
+              {
+                "value": "fr",
+                "caption": "Config.targetLanguages_fr"
+              },
+              {
+                "value": "it",
+                "caption": "Config.targetLanguages_it"
+              },
+              {
+                "value": "es",
+                "caption": "Config.targetLanguages_es"
+              },
+              {
+                "value": "nl",
+                "caption": "Config.targetLanguages_nl"
+              },
+              {
+                "value": "bg",
+                "caption": "Config.targetLanguages_bg"
+              },
+              {
+                "value": "cn",
+                "caption": "Config.targetLanguages_cn"
+              },
+              {
+                "value": "cz",
+                "caption": "Config.targetLanguages_cz"
+              },
+              {
+                "value": "da",
+                "caption": "Config.targetLanguages_da"
+              },
+              {
+                "value": "nn",
+                "caption": "Config.targetLanguages_nn"
+              },
+              {
+                "value": "pl",
+                "caption": "Config.targetLanguages_pl"
+              },
+              {
+                "value": "pt",
+                "caption": "Config.targetLanguages_pt"
+              },
+              {
+                "value": "ro",
+                "caption": "Config.targetLanguages_ro"
+              },
+              {
+                "value": "ru",
+                "caption": "Config.targetLanguages_ru"
+              },
+              {
+                "value": "se",
+                "caption": "Config.targetLanguages_se"
+              },
+              {
+                "value": "sk",
+                "caption": "Config.targetLanguages_sk"
+              },
+              {
+                "value": "tr",
+                "caption": "Config.targetLanguages_tr"
+              },
+              {
+                "value": "vn",
+                "caption": "Config.targetLanguages_vn"
+              }
+            ],
+            "tooltip": "Config.targetLanguagesHelp"
+          }
+        },
+        "englishVariant": {
+          "type": "selectBox",
+          "required": false,
+          "label": "Config.englishVariant",
+          "options": {
+            "defaultValue": "EN-GB",
+            "selectBoxValues": [
+              {
+                "value": "EN-GB",
+                "caption": "Config.englishVariant_EN-GB"
+              },
+              {
+                "value": "EN-US",
+                "caption": "Config.englishVariant_EN-US"
+              }
+            ]
+          }
+        },
+        "portugueseVariant": {
+          "type": "selectBox",
+          "required": false,
+          "label": "Config.portugueseVariant",
+          "options": {
+            "defaultValue": "PT-PT",
+            "selectBoxValues": [
+              {
+                "value": "PT-PT",
+                "caption": "Config.portugueseVariant_PT-PT"
+              },
+              {
+                "value": "PT-BR",
+                "caption": "Config.portugueseVariant_PT-BR"
+              }
+            ]
+          }
+        },
+        "chineseVariant": {
+          "type": "selectBox",
+          "required": false,
+          "label": "Config.chineseVariant",
+          "options": {
+            "defaultValue": "ZH-HANS",
+            "selectBoxValues": [
+              {
+                "value": "ZH-HANS",
+                "caption": "Config.chineseVariant_ZH-HANS"
+              },
+              {
+                "value": "ZH-HANT",
+                "caption": "Config.chineseVariant_ZH-HANT"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "access": {
+      "label": "Config.access",
+      "formFields": {
+        "plentyBaseUrl": {
+          "type": "inputText",
+          "required": false,
+          "label": "Config.plentyBaseUrl",
+          "options": {
+            "defaultValue": ""
+          }
+        },
+        "operatorUserId": {
+          "type": "inputText",
+          "required": false,
+          "label": "Config.operatorUserId",
+          "options": {
+            "defaultValue": "0"
+          }
+        },
+        "plentyUsername": {
+          "type": "inputText",
+          "required": false,
+          "label": "Config.plentyUsername",
+          "options": {
+            "defaultValue": ""
+          }
+        },
+        "plentyPassword": {
+          "type": "inputText",
+          "required": false,
+          "label": "Config.plentyPassword",
+          "options": {
+            "defaultValue": "",
+            "isPassword": true
+          }
+        },
+        "deeplPlan": {
+          "type": "selectBox",
+          "required": false,
+          "label": "Config.deeplPlan",
+          "options": {
+            "defaultValue": "pro",
+            "selectBoxValues": [
+              {
+                "value": "pro",
+                "caption": "Config.deeplPlan_pro"
+              },
+              {
+                "value": "free",
+                "caption": "Config.deeplPlan_free"
+              }
+            ]
+          }
+        },
+        "deeplKey": {
+          "type": "inputText",
+          "required": false,
+          "label": "Config.deeplKey",
+          "options": {
+            "defaultValue": "",
+            "isPassword": true
+          }
+        }
+      }
+    },
+    "tags": {
+      "label": "Config.tags",
+      "formFields": {
+        "readyTagId": {
+          "type": "inputText",
+          "required": false,
+          "label": "Config.readyTagId",
+          "options": {
+            "defaultValue": "0"
+          }
+        },
+        "reviewTagId": {
+          "type": "inputText",
+          "required": false,
+          "label": "Config.reviewTagId",
+          "options": {
+            "defaultValue": "0"
+          }
+        }
+      }
+    },
+    "glossary": {
+      "label": "Config.glossary",
+      "formFields": {
+        "glossaryMode": {
+          "type": "selectBox",
+          "required": false,
+          "label": "Config.glossaryMode",
+          "options": {
+            "defaultValue": "off",
+            "selectBoxValues": [
+              {
+                "value": "off",
+                "caption": "Config.glossaryMode_off"
+              },
+              {
+                "value": "required",
+                "caption": "Config.glossaryMode_required"
+              }
+            ]
+          }
+        },
+        "glossaryId": {
+          "type": "inputText",
+          "required": false,
+          "label": "Config.glossaryId",
+          "options": {
+            "defaultValue": ""
+          }
+        },
+        "translationContext": {
+          "type": "inputTextArea",
+          "required": false,
+          "label": "Config.translationContext",
+          "options": {
+            "defaultValue": "Factual product descriptions for an online shop. Preserve brand names, product identifiers, dimensions, quantities and material specifications."
+          }
+        }
+      }
     }
-  },
-  {
-    "tab": "Übersetzungen",
-    "key": "writesAllowed",
-    "label": "Texte und Tags speichern",
-    "type": "dropdown",
-    "default": "0",
-    "possibleValues": {
-      "0": "Vorschau",
-      "1": "Speichern"
-    }
-  },
-  {
-    "tab": "Übersetzungen",
-    "key": "pilotItemId",
-    "label": "Artikel-ID für Einzeltest",
-    "type": "text",
-    "default": "10009957"
-  },
-  {
-    "tab": "Übersetzungen",
-    "key": "operatorUserId",
-    "label": "API-Benutzer-ID für Steuerung",
-    "type": "text",
-    "default": "197"
-  },
-  {
-    "tab": "Übersetzungen",
-    "key": "plentyUsername",
-    "label": "Plenty API-Benutzer",
-    "type": "text",
-    "default": "waldorfshop_translation"
-  },
-  {
-    "tab": "Übersetzungen",
-    "key": "plentyPassword",
-    "label": "Plenty API-Passwort",
-    "type": "password",
-    "default": ""
-  },
-  {
-    "tab": "Übersetzungen",
-    "key": "deeplKey",
-    "label": "DeepL API Pro Schlüssel",
-    "type": "password",
-    "default": ""
   }
-]
+}
