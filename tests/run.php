@@ -18,6 +18,7 @@ class FakeGateway
     public $dropWrite = false;
     public $failReview = false;
     public $failTranslation = false;
+    public $invalidNumbers = false;
     public function __construct()
     {
         $this->rows = ['de' => ['name' => 'Spieltuch', 'previewDescription' => '<p>Seide</p>', 'description' => '<p>90 x 90 cm</p>', 'metaDescription' => 'Seide für freies Spiel'], 'en' => ['name' => 'Old English title', 'urlPath' => 'keep-me']];
@@ -28,6 +29,7 @@ class FakeGateway
     {
         $this->calls++;
         if ($this->failTranslation) { throw new RuntimeException('Provider failure'); }
+        if ($this->invalidNumbers) { $text = str_replace('90', '91', $text); }
         return str_replace(['Spieltuch','Seide'], ['Playcloth','Silk'], $text);
     }
     public function writeTexts($c,$lang,$changes,$exists)
@@ -122,6 +124,13 @@ $tests['validation protects HTML attributes numbers and title length']=function(
 };
 $tests['active HTML blocked and images are not blank']=function(){
     raises(function(){Engine::blank('<script>x()</script>');});expect(!Engine::blank('<img src="/a.png">'));expect(Engine::blank('<p>&nbsp;</p>'));
+};
+$tests['rejected paid output is retained but never applied or paid twice']=function(){
+    [$s,$g,$e,$c]=fixture();$g->invalidNumbers=true;
+    raises(function()use($e,$c){$e->run($c,true);});
+    $calls=$g->calls;expect(!$g->writes);expect($g->ready===[420,421]);
+    $job=$s->get('job:42');expect($job['status']==='blocked');expect($job['validation_error']['field']==='description');expect(strpos($job['validation_error']['target'],'91')!==false);
+    raises(function()use($e,$c){$e->run($c,true);});expect($g->calls===$calls);expect(!$g->writes);
 };
 $failed=0;
 foreach($tests as $name=>$test){try{$test();echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: ".$e->getMessage()."\n";}}
