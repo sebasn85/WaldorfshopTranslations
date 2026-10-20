@@ -39,9 +39,9 @@ class TranslationController extends Controller
         }
     }
     public function configurationCheck(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->configurationCheck() + ['release' => '0.2.0']; }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->configurationCheck() + ['release' => '0.2.1']; }
     public function status(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->status() + ['release' => '0.2.0']; }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->status() + ['release' => '0.2.1']; }
     public function pilot(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot() + ['release' => '0.2.0']; }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot() + ['release' => '0.2.1']; }
 }
