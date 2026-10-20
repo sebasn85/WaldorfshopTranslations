@@ -177,10 +177,18 @@ class TranslationEngine
                     if ($cached === null) {
                         $this->reserve($candidate['item_id'], self::characters($source));
                         $translated = $this->gateway->translate($source, $options);
-                        self::validate($source, $translated, $field);
+                        // Retain paid provider output even when validation rejects it.
+                        // Every cached response is validated before it can be applied.
                         $cached = ['text' => $translated]; $this->store->put($cacheKey, $cached);
                     }
-                    self::validate($source, $cached['text'], $field);
+                    try {
+                        self::validate($source, $cached['text'], $field);
+                    } catch (\Throwable $validationError) {
+                        $job['validation_error'] = ['language' => $lang, 'field' => $field, 'source' => $source, 'target' => $cached['text'], 'message' => $validationError->getMessage()];
+                        $this->store->put($key, $job);
+                        throw $validationError;
+                    }
+                    unset($job['validation_error']);
                     $job['targets'][$lang]['changes'][$field] = $cached['text'];
                     $this->store->put($key, $job);
                 }
