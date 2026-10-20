@@ -51,8 +51,11 @@ class TranslationEngine
         } elseif ($target !== strip_tags($target)) {
             throw new \RuntimeException('HTML in Klartextfeld.');
         }
-        preg_match_all('/\d+(?:[.,]\d+)*/u', strip_tags($source), $a);
-        preg_match_all('/\d+(?:[.,]\d+)*/u', strip_tags($target), $b);
+        // HTML entities such as French apostrophe &#x27; are characters, not numbers.
+        $sourceText = html_entity_decode(strip_tags($source), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $targetText = html_entity_decode(strip_tags($target), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        preg_match_all('/\d+(?:[.,]\d+)*/u', $sourceText, $a);
+        preg_match_all('/\d+(?:[.,]\d+)*/u', $targetText, $b);
         $x = array_map(function ($n) { return preg_replace('/\D/', '', $n); }, $a[0]);
         $y = array_map(function ($n) { return preg_replace('/\D/', '', $n); }, $b[0]);
         sort($x); sort($y);
