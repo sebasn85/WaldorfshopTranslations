@@ -15,7 +15,7 @@ class Configuration
     }
     private static function positive($value, string $label): int
     {
-        if (!is_scalar($value) || !preg_match('/^[1-9][0-9]{0,8}$/D', (string)$value)) { throw new \RuntimeException($label . ': positive ganze Zahl erforderlich.'); }
+        if ((!is_string($value) && !is_int($value)) || !preg_match('/^[1-9][0-9]{0,8}$/D', (string)$value)) { throw new \RuntimeException($label . ': positive ganze Zahl erforderlich.'); }
         return (int)$value;
     }
     public static function parse(array $values): array
