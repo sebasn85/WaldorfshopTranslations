@@ -9,12 +9,15 @@ class TranslationEngine
     private $store;
     private $gateway;
     private $settings;
+    private $targets;
 
     public function __construct($store, $gateway, array $settings)
     {
         $this->store = $store;
         $this->gateway = $gateway;
         $this->settings = $settings;
+        $this->targets = $settings['targets'] ?? self::TARGETS;
+        if (!$this->targets) { throw new \RuntimeException('Mindestens eine Zielsprache auswählen.'); }
     }
 
     public static function hash($value): string
@@ -97,7 +100,7 @@ class TranslationEngine
         }
         $baseline = $this->store->get('baseline:' . $candidate['item_id']) ?? [];
         $targets = []; $conflicts = [];
-        foreach (self::TARGETS as $lang => $code) {
+        foreach ($this->targets as $lang => $code) {
             $before = $this->selected($rows[$lang] ?? []);
             $needed = []; $reasons = [];
             foreach (self::FIELDS as $field) {
@@ -155,7 +158,7 @@ class TranslationEngine
                 }
                 $job = null;
             } elseif (!$job['write_started']) {
-                foreach (self::TARGETS as $lang => $code) {
+                foreach ($this->targets as $lang => $code) {
                     if ($job['targets'][$lang]['before'] !== $fresh['targets'][$lang]['before']) { $job = null; break; }
                 }
             }
@@ -168,14 +171,16 @@ class TranslationEngine
         }
         try {
             $this->gateway->verifyGlossary();
-            foreach (self::TARGETS as $lang => $code) {
+            foreach ($this->targets as $lang => $code) {
                 foreach ($job['targets'][$lang]['needed'] as $field => $source) {
                     if (isset($job['targets'][$lang]['changes'][$field])) { continue; }
-                    $options = ['source_lang' => 'DE', 'target_lang' => $code, 'formality' => 'prefer_less', 'preserve_formatting' => true, 'context' => $this->settings['context'] . "\n" . $job['source']['name'], 'glossary_id' => $job['policy']['glossary_id']];
+                    $options = ['source_lang' => 'DE', 'target_lang' => $code, 'preserve_formatting' => true, 'context' => $this->settings['context'] . "\n" . $job['source']['name']];
+                    if (!empty($job['policy']['glossary_id'])) { $options['glossary_id'] = $job['policy']['glossary_id']; }
+                    if (!empty($this->settings['formality'][$lang])) { $options['formality'] = 'prefer_less'; }
                     if (in_array($field, ['description', 'previewDescription'], true)) {
                         $options['tag_handling'] = 'html'; $options['tag_handling_version'] = 'v2';
                     }
-                    $cacheKey = 'cache:' . self::hash([$source, $options, $field]);
+                    $cacheKey = 'cache:' . self::hash([$source, $options, $field, $job['policy']]);
                     $cached = $this->store->get($cacheKey);
                     if ($cached === null) {
                         $this->reserve($candidate['item_id'], self::characters($source));
@@ -202,7 +207,7 @@ class TranslationEngine
             if (!$taggingStarted && !$this->gateway->hasAnyTrigger($candidate)) {
                 throw new \RuntimeException('Auslöser-Tag entfernt.');
             }
-            foreach (self::TARGETS as $lang => $code) {
+            foreach ($this->targets as $lang => $code) {
                 $rows = $this->gateway->texts($candidate);
                 if (self::hash($this->selected($rows['de'] ?? [])) !== $job['source_hash']) {
                     throw new \RuntimeException('Deutscher Text während Verarbeitung geändert.');
@@ -223,7 +228,7 @@ class TranslationEngine
             }
             $rows = $this->gateway->texts($candidate);
             if (self::hash($this->selected($rows['de'] ?? [])) !== $job['source_hash']) { throw new \RuntimeException('Quelle vor Rückleseprüfung geändert.'); }
-            foreach (self::TARGETS as $lang => $code) {
+            foreach ($this->targets as $lang => $code) {
                 $current = $this->selected($rows[$lang] ?? []);
                 foreach ($job['targets'][$lang]['changes'] as $field => $value) {
                     if ($current[$field] !== $value) { throw new \RuntimeException('Rückleseprüfung fehlgeschlagen.'); }
@@ -233,7 +238,7 @@ class TranslationEngine
                 }
             }
             $baseline = $this->store->get('baseline:' . $candidate['item_id']) ?? [];
-            foreach (self::TARGETS as $lang => $code) {
+            foreach ($this->targets as $lang => $code) {
                 foreach ($job['targets'][$lang]['changes'] as $field => $value) {
                     $baseline[$lang][$field] = ['source' => $job['source'][$field], 'target' => $value];
                 }
