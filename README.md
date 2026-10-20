@@ -1,10 +1,10 @@
-# WaldorfshopTranslations 0.2.0
+# WaldorfshopTranslations 0.2.1
 
 Konfigurierbares Plenty-Plugin für deutsche Artikeltexte → ausgewählte Zielsprachen mit DeepL. Testversion: keine automatische Aktivierung durch Installation oder Update. Ein realer Ein-Artikel-Test der Version 0.1.2 hat alle 20 Textfelder und den vollständigen Tag-Wechsel bestätigt; die neue Konfigurationsversion wird separat im Testset geprüft.
 
 ## Einrichtung in Plenty
 
-Alle Einstellungen liegen unter **Plugins → Plugin-Set → WaldorfshopTranslations → Konfiguration**. Beschriftungen sind auf Deutsch und Englisch verfügbar. Neue Installationen enthalten keine shopbezogenen Zugänge, Tag-IDs oder Artikel-IDs.
+Alle Einstellungen liegen unter **Plugins → Plugin-Set → WaldorfshopTranslations → Konfiguration**. Beschriftungen sind auf Deutsch und Englisch verfügbar. Neue Installationen enthalten keine shopbezogenen Zugänge, Tag-IDs oder Artikel-IDs. Beim Wechsel vom alten Konfigurationsformat müssen bestehende Zugänge und IDs einmal in der neuen Oberfläche gespeichert werden; vor jedem Update die Automatik ausschalten.
 
 1. **API-Zugänge:** eigene HTTPS-Plenty-Backend-Adresse, API-Benutzer und Passwort, dessen Benutzer-ID für die Steuerung, DeepL API Free oder Pro und den passenden API-Schlüssel eintragen. Passwörter werden als Passwortfelder dargestellt. Nur Benutzer mit Zugriff auf die Plugin-Konfiguration dürfen Zugänge bearbeiten; Maskierung ersetzt keine Rechteverwaltung.
 2. **Zielsprachen:** gewünschte Sprachen anhaken. Quelle bleibt Deutsch. Mindestens eine Zielsprache auswählen. Englisch (GB/US), Portugiesisch (PT/BR) und Chinesisch (vereinfacht/traditionell) haben je eine Variantenwahl; Plenty speichert jeweils nur ein Sprachfeld.
