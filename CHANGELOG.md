@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 — 2026-10-20 (test release)
+
+### Fixed
+- Replace is_scalar with supported explicit type checks for the Plenty SDK.
+- Use unquoted Plenty translation property values.
+
+### ToDo
+- When migrating from the legacy configuration format, explicitly re-save API access, IDs and operating switches in the new form.
+
 ## 0.2.0 — 2026-10-20 (test release)
 
 ### Added
