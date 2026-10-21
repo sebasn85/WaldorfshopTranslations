@@ -1,4 +1,4 @@
-# WaldorfshopTranslations 0.2.2
+# WaldorfshopTranslations 0.2.3
 
 Konfigurierbares Plenty-Plugin für deutsche Artikeltexte → ausgewählte Zielsprachen mit DeepL. Testversion: keine automatische Aktivierung durch Installation oder Update. Ein realer Ein-Artikel-Test der Version 0.1.2 hat alle 20 Textfelder und den vollständigen Tag-Wechsel bestätigt; die neue Konfigurationsversion wird separat im Testset geprüft.
 
@@ -23,6 +23,8 @@ Beim Wechsel von Version 0.2.1 bleiben bekannte Vergleichsstände der bisherigen
 
 Erst nach Rücklesen aller ausgewählten Sprachen werden Vergleichsstände gespeichert, der konfigurierte Prüftag auf allen ursprünglich markierten Varianten gesetzt und danach die Auslöser entfernt. Nicht ausgewählte Sprachen sind keine Voraussetzung für den Tag-Wechsel. Es gibt keine Transaktion über mehrere Sprachen und keinen serverseitigen Compare-and-Swap. Parallelbearbeitung während der Verarbeitung vermeiden.
 
+Ab Version 0.2.3 werden äußere ASCII-Leerzeichen in Klartextübersetzungen vor dem Speichern entfernt und beim Rücklesen vereinheitlicht. Innere Leerzeichen, Textinhalt und sämtliche HTML-Felder bleiben exakt geprüft. Der Vergleichsstand enthält die tatsächlich zurückgelesenen Werte. Bereits gespeicherte Teilaufträge behalten ihre bezahlten Übersetzungen; blockierte Aufträge benötigen weiterhin eine gezielte manuelle Wiederaufnahme und werden durch ein Update nicht automatisch freigegeben.
+
 Globale Datenbanksperre gegen parallele Läufe, dauerhafte Jobs für Teilfehler, Antwortcache und Monatsbudget bleiben erhalten. Sprache, Variantenwahl, Tag-IDs, Glossarinhalt und Kontext sind Teil der Verarbeitungspolitik. Änderungen dieser Einstellungen nach einer Teilübernahme blockieren die automatische Fortsetzung. Ein Vorschaujob ohne Teilübernahme darf neu geplant werden. Budgets bereits vorhandener Installationen bleiben erhalten; neue Shops übernehmen keine Waldorfshop-Pilotverbräuche.
 
 Der Cron verarbeitet alle 15 Minuten maximal einen Artikel, wenn beide Betriebsschalter aktiv sind. `blocked` und `review_required` werden automatisch übersprungen. Kostenpflichtige Anfragen und Artikel-Schreibzugriffe werden nicht blind wiederholt. Nach einem harten Prozessabbruch eine verwaiste Sperre erst administrativ lösen, wenn kein Worker mehr läuft.
@@ -41,7 +43,7 @@ Erforderliche Plenty-Rechte: Artikel und Varianten lesen; Artikeltexte lesen, er
 
 ## Tests und Veröffentlichung
 
-`php tests/run.php` führt 59 Regressionstests aus, einschließlich Felderweiterung, Nachholen bestehender Artikel, HTML-Schutz, Titellängen und Ausschluss von URL-Änderungen. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins.
+`php tests/run.php` führt 64 Regressionstests aus, einschließlich Plenty-Leerzeichenbehandlung, Wiederaufnahme bestehender Teilaufträge ohne neue Übersetzungsanfragen oder Textschreibzugriffe, Felderweiterung, HTML-Schutz, Titellängen und Ausschluss von URL-Änderungen. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins.
 
 Die Marketplace-Veröffentlichung ist ein separater Schritt: Partnerregistrierung, endgültiger Produktname, Kategorie und Produktmetadaten, Supportkontakt, vollständige DE-/EN-Anleitung, Paketprüfung, Reviewzugänge und Plenty-Review. Diese Entwicklungsversion wurde nicht eingereicht und ist keine Marketplace-Zulassung. Die historischen Klassen `Glossary` und `InitialBudget` aus dem privaten Pilot werden seit 0.2.0 nicht mehr zur Laufzeit verwendet und sind vor einer öffentlichen Paketabgabe zu bereinigen.
 
