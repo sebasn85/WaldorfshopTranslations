@@ -11,6 +11,7 @@ class FakeGateway
 {
     public $rows;
     public $calls = 0;
+    public $translationRequests = [];
     public $writes = [];
     public $ready = [420,421];
     public $review = [];
@@ -28,6 +29,7 @@ class FakeGateway
     public function translate($text, $options)
     {
         $this->calls++;
+        $this->translationRequests[] = [$text, $options];
         if ($this->failTranslation) { throw new RuntimeException('Provider failure'); }
         if ($this->invalidNumbers) { $text = str_replace('90', '91', $text); }
         return str_replace(['Spieltuch','Seide'], ['Playcloth','Silk'], $text);
@@ -139,6 +141,8 @@ $tests['encoded HTML apostrophes never count as product numbers']=function(){
 };
 require __DIR__ . '/configuration-fixture.php';
 $tests += configurationTests();
+require __DIR__ . '/fields-fixture.php';
+$tests += fieldCoverageTests();
 $failed=0;
 foreach($tests as $name=>$test){try{$test();echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: ".$e->getMessage()."\n";}}
 echo count($tests)." tests; $failed failures\n";
