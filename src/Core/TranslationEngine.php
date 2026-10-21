@@ -4,7 +4,9 @@ namespace WaldorfshopTranslations\Core;
 /** Pure worker logic; platform, HTTP and persistence are injected adapters. */
 class TranslationEngine
 {
-    const FIELDS = ['name', 'previewDescription', 'description', 'metaDescription'];
+    const FIELDS = ['name', 'name2', 'name3', 'title', 'previewDescription', 'description', 'technicalData', 'metaDescription', 'metaKeywords'];
+    const HTML_FIELDS = ['previewDescription', 'description', 'technicalData'];
+    const TITLE_FIELDS = ['name', 'name2', 'name3', 'title'];
     const TARGETS = ['en' => 'EN-GB', 'fr' => 'FR', 'it' => 'IT', 'es' => 'ES', 'nl' => 'NL'];
     private $store;
     private $gateway;
@@ -44,7 +46,7 @@ class TranslationEngine
             throw new \RuntimeException('Leere Übersetzung.');
         }
         self::checkMarkup($source);
-        if (in_array($field, ['previewDescription', 'description'], true)) {
+        if (in_array($field, self::HTML_FIELDS, true)) {
             // Deliberately strict: every original tag/attribute must remain exact.
             preg_match_all('/<[^>]*>/u', $source, $a);
             preg_match_all('/<[^>]*>/u', $target, $b);
@@ -65,8 +67,8 @@ class TranslationEngine
         if ($x !== $y) {
             throw new \RuntimeException('Zahlen verändert.');
         }
-        if ($field === 'name' && self::characters($target) > 240) {
-            throw new \RuntimeException('Artikelname über 240 Zeichen.');
+        if (in_array($field, self::TITLE_FIELDS, true) && self::characters($target) > 240) {
+            throw new \RuntimeException('Artikelname oder HTML-Titel über 240 Zeichen.');
         }
     }
 
@@ -177,7 +179,7 @@ class TranslationEngine
                     $options = ['source_lang' => 'DE', 'target_lang' => $code, 'preserve_formatting' => true, 'context' => $this->settings['context'] . "\n" . $job['source']['name']];
                     if (!empty($job['policy']['glossary_id'])) { $options['glossary_id'] = $job['policy']['glossary_id']; }
                     if (!empty($this->settings['formality'][$lang])) { $options['formality'] = 'prefer_less'; }
-                    if (in_array($field, ['description', 'previewDescription'], true)) {
+                    if (in_array($field, self::HTML_FIELDS, true)) {
                         $options['tag_handling'] = 'html'; $options['tag_handling_version'] = 'v2';
                     }
                     $cacheKey = 'cache:' . self::hash([$source, $options, $field, $job['policy']]);
