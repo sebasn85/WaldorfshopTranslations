@@ -20,6 +20,7 @@ class FakeGateway
     public $failReview = false;
     public $failTranslation = false;
     public $invalidNumbers = false;
+    public $writeTransform = null;
     public function __construct()
     {
         $this->rows = ['de' => ['name' => 'Spieltuch', 'previewDescription' => '<p>Seide</p>', 'description' => '<p>90 x 90 cm</p>', 'metaDescription' => 'Seide für freies Spiel'], 'en' => ['name' => 'Old English title', 'urlPath' => 'keep-me']];
@@ -37,7 +38,7 @@ class FakeGateway
     public function writeTexts($c,$lang,$changes,$exists)
     {
         $this->writes[] = [$lang,$changes];
-        if (!$this->dropWrite) { $this->rows[$lang] = array_merge($this->rows[$lang] ?? [],$changes); }
+        if (!$this->dropWrite) { $this->rows[$lang] = array_merge($this->rows[$lang] ?? [],$this->writeTransform ? ($this->writeTransform)($changes) : $changes); }
         if ($this->failWrite) { $this->failWrite=false;throw new RuntimeException('Ambiguous write'); }
     }
     public function hasAnyTrigger($c) { return count($this->ready)>0; }
@@ -143,6 +144,8 @@ require __DIR__ . '/configuration-fixture.php';
 $tests += configurationTests();
 require __DIR__ . '/fields-fixture.php';
 $tests += fieldCoverageTests();
+require __DIR__ . '/readback-fixture.php';
+$tests += readbackTests();
 $failed=0;
 foreach($tests as $name=>$test){try{$test();echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: ".$e->getMessage()."\n";}}
 echo count($tests)." tests; $failed failures\n";
