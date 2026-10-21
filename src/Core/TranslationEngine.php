@@ -93,6 +93,12 @@ class TranslationEngine
         return $result;
     }
 
+    private static function storedText(string $field, string $text): string
+    {
+        // Plenty trims boundary whitespace in plain-text fields. Keep HTML exact.
+        return in_array($field, self::HTML_FIELDS, true) ? $text : trim($text, " \t\n\r\v");
+    }
+
     public function plan(array $candidate): array
     {
         $rows = $this->gateway->texts($candidate);
@@ -199,7 +205,7 @@ class TranslationEngine
                         throw $validationError;
                     }
                     unset($job['validation_error']);
-                    $job['targets'][$lang]['changes'][$field] = $cached['text'];
+                    $job['targets'][$lang]['changes'][$field] = self::storedText($field, $cached['text']);
                     $this->store->put($key, $job);
                 }
             }
@@ -216,7 +222,8 @@ class TranslationEngine
                 }
                 $current = $this->selected($rows[$lang] ?? []); $changes = [];
                 foreach ($job['targets'][$lang]['changes'] as $field => $value) {
-                    if ($current[$field] === $value) { continue; }
+                    $value = self::storedText($field, $value);
+                    if (self::storedText($field, $current[$field]) === $value) { continue; }
                     if ($current[$field] !== $job['targets'][$lang]['before'][$field]) {
                         throw new \RuntimeException('Zieltext während Verarbeitung geändert.');
                     }
@@ -233,7 +240,9 @@ class TranslationEngine
             foreach ($this->targets as $lang => $code) {
                 $current = $this->selected($rows[$lang] ?? []);
                 foreach ($job['targets'][$lang]['changes'] as $field => $value) {
-                    if ($current[$field] !== $value) { throw new \RuntimeException('Rückleseprüfung fehlgeschlagen.'); }
+                    if (self::storedText($field, $current[$field]) !== self::storedText($field, $value)) {
+                        throw new \RuntimeException('Rückleseprüfung fehlgeschlagen: ' . $lang . ':' . $field . '.');
+                    }
                 }
                 foreach ($job['source'] as $field => $source) {
                     if (!self::blank($source) && self::blank($current[$field])) { throw new \RuntimeException('Übersetzung unvollständig.'); }
@@ -241,8 +250,9 @@ class TranslationEngine
             }
             $baseline = $this->store->get('baseline:' . $candidate['item_id']) ?? [];
             foreach ($this->targets as $lang => $code) {
+                $current = $this->selected($rows[$lang] ?? []);
                 foreach ($job['targets'][$lang]['changes'] as $field => $value) {
-                    $baseline[$lang][$field] = ['source' => $job['source'][$field], 'target' => $value];
+                    $baseline[$lang][$field] = ['source' => $job['source'][$field], 'target' => $current[$field]];
                 }
             }
             $this->store->put('baseline:' . $candidate['item_id'], $baseline);
