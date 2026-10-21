@@ -1,4 +1,4 @@
-# WaldorfshopTranslations 0.2.1
+# WaldorfshopTranslations 0.2.2
 
 Konfigurierbares Plenty-Plugin für deutsche Artikeltexte → ausgewählte Zielsprachen mit DeepL. Testversion: keine automatische Aktivierung durch Installation oder Update. Ein realer Ein-Artikel-Test der Version 0.1.2 hat alle 20 Textfelder und den vollständigen Tag-Wechsel bestätigt; die neue Konfigurationsversion wird separat im Testset geprüft.
 
@@ -17,7 +17,9 @@ Unterstützte Plenty-Zielsprachen: EN, FR, IT, ES, NL, BG, CN, CZ, DA, NN, PL, P
 
 ## Ablauf und Schutz vorhandener Texte
 
-Der konfigurierte Auslöser-Tag wird direkt auf Varianten geprüft und nach Artikel zusammengefasst. Felder: Name, Kurzbeschreibung, Beschreibung und Meta-Beschreibung. Unbekannte Vergleichsstände werden ohne zusätzliche Freigabe aktualisiert. Bei bekannten Vorlagen werden nur geänderte deutsche und fehlende Zielfelder übersetzt. Manuelle Zieländerungen bei unverändertem Deutsch bleiben erhalten; gleichzeitige Änderungen gehen zur Prüfung. Abgewählte Sprachen werden weder übersetzt noch geschrieben oder aus dem bisherigen Vergleichsstand entfernt.
+Der konfigurierte Auslöser-Tag wird direkt auf Varianten geprüft und nach Artikel zusammengefasst. Übersetzt werden alle neun Artikeltextfelder: **Name 1, Name 2, Name 3, HTML-Titel für Webshop, Vorschautext, Artikeltext, technische Daten, Meta-Beschreibung und Meta-Keywords**. **URL-Pfade werden nicht an DeepL übergeben und nicht geschrieben.** Name 1–3 und HTML-Titel bleiben Klartext mit maximal 240 Zeichen; Vorschautext, Artikeltext und technische Daten erhalten ihre HTML-Struktur und Attribute. Leere deutsche Felder erzeugen keine Übersetzungsanfragen und löschen keine vorhandenen Zieltexte; bestehende Zieltexte bei leerer Quelle erfordern eine Prüfung. Unbekannte Vergleichsstände werden ohne zusätzliche Freigabe aktualisiert. Bei bekannten Vorlagen werden nur geänderte deutsche und fehlende Zielfelder übersetzt. Manuelle Zieländerungen bei unverändertem Deutsch bleiben erhalten; gleichzeitige Änderungen gehen zur Prüfung. Abgewählte Sprachen werden weder übersetzt noch geschrieben oder aus dem bisherigen Vergleichsstand entfernt.
+
+Beim Wechsel von Version 0.2.1 bleiben bekannte Vergleichsstände der bisherigen vier Felder erhalten. Die fünf ergänzten Felder werden beim erneuten Markieren des Artikels nachgeholt. Ein bereits teilweise geschriebener alter Job wird nach der Felderweiterung blockiert und muss vor Fortsetzung geprüft werden; er wird nicht still ersetzt. Bereits abgeschlossene Artikel werden ohne erneuten Auslöser-Tag nicht automatisch wieder aufgenommen. Der zusätzliche Feldumfang verbraucht entsprechend mehr vom vorhandenen Zeichenbudget.
 
 Erst nach Rücklesen aller ausgewählten Sprachen werden Vergleichsstände gespeichert, der konfigurierte Prüftag auf allen ursprünglich markierten Varianten gesetzt und danach die Auslöser entfernt. Nicht ausgewählte Sprachen sind keine Voraussetzung für den Tag-Wechsel. Es gibt keine Transaktion über mehrere Sprachen und keinen serverseitigen Compare-and-Swap. Parallelbearbeitung während der Verarbeitung vermeiden.
 
@@ -39,13 +41,15 @@ Erforderliche Plenty-Rechte: Artikel und Varianten lesen; Artikeltexte lesen, er
 
 ## Tests und Veröffentlichung
 
-`php tests/run.php` führt 50 Regressionstests aus. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins.
+`php tests/run.php` führt 59 Regressionstests aus, einschließlich Felderweiterung, Nachholen bestehender Artikel, HTML-Schutz, Titellängen und Ausschluss von URL-Änderungen. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins.
 
 Die Marketplace-Veröffentlichung ist ein separater Schritt: Partnerregistrierung, endgültiger Produktname, Kategorie und Produktmetadaten, Supportkontakt, vollständige DE-/EN-Anleitung, Paketprüfung, Reviewzugänge und Plenty-Review. Diese Entwicklungsversion wurde nicht eingereicht und ist keine Marketplace-Zulassung. Die historischen Klassen `Glossary` und `InitialBudget` aus dem privaten Pilot werden seit 0.2.0 nicht mehr zur Laufzeit verwendet und sind vor einer öffentlichen Paketabgabe zu bereinigen.
 
 ## English setup
 
 Configure the plugin directly in **Plugins → plugin set → WaldorfshopTranslations → Configuration**. All configuration labels are available in English and German. Enter your own validated Plenty backend URL, API username/password, allowed API user ID, DeepL API Free/Pro plan and API key. Select target languages using checkboxes; the source is German. Configure two different existing variation tags (trigger and review), optional multilingual glossary ID/context, and monthly item/character limits. English, Portuguese and Chinese each offer a variant selector; each has one Plenty text row.
+
+The plugin translates nine fields: name 1, name 2, name 3, webshop HTML title, preview text, description, technical data, meta description and meta keywords. URL paths are excluded from translation and writes. Names and HTML titles have a 240-character limit; technical data preserves HTML just like descriptions. Empty source fields never erase existing translations. Existing four-field baselines are retained; re-tag completed articles to fill the five added fields. Partially written older jobs require manual review after this update. The larger field coverage uses more of the configured character budget.
 
 The read-only `configuration-check` endpoint verifies tag availability, credentials, selected languages, HTML support and required glossary coverage before any paid translation. A required glossary must contain every selected DE→target dictionary; missing coverage stops processing. Unselected languages remain unchanged. Only after all selected translations have been saved and read back is the review tag added and the trigger removed. Concurrent source/target edits and changed configuration after partial writes require manual review.
 
