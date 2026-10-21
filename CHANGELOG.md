@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.3 — 2026-10-21 (test release)
+
+### Fixed
+- Normalize only boundary ASCII whitespace in plain-text translation output and readback comparisons; preserve internal whitespace and exact HTML checks.
+- Use the same comparison during partial-write recovery, retaining paid outputs and skipping already saved equivalent values.
+- Persist actual verified backend values as the baseline and include language/field in future readback errors.
+- Five regression checks reproduce Plenty trimming and existing partial jobs, while retaining protection for internal text changes, HTML whitespace and manual edits. 64 checks total.
+
+### Update notes
+- No diagnostic build hook, automatic unblocking, configuration/tag changes or production deployment. Existing blocked jobs require a separately controlled resume.
+
 ## 0.2.2 — 2026-10-21 (test release)
 
 ### Added
