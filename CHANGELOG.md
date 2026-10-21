@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.2 — 2026-10-21 (test release)
+
+### Added
+- Translate name 2, name 3, webshop HTML title, meta keywords and technical data in addition to the original four fields; URL paths remain excluded.
+- Preserve technical-data HTML and attributes; enforce the 240-character limit for all three names and the HTML title.
+- Nine regression checks cover all nine fields across five languages, existing baseline expansion, selective refresh, manual edits, empty sources, readback failures and the HTTP write allowlist. 59 checks total.
+
+### Update notes
+- Existing completed articles need the trigger tag again to fill added fields; unchanged tracked fields are retained without new paid requests.
+- Keep partially written older jobs for manual review. No automatic activation, tag/configuration changes or production deployment is performed by this release.
+
 ## 0.2.1 — 2026-10-20 (test release)
 
 ### Fixed
