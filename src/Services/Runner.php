@@ -50,7 +50,7 @@ class Runner
                         $job = $this->store->get('job:' . $candidate['item_id']);
                         return ['item_id'=>$candidate['item_id'], 'status'=>$recovering && $job && $job['status'] === 'complete' ? 'complete' : 'cancelled'];
                     }
-                    $engine = pluginApp(TranslationEngine::class, [$this->store, $this->gateway, $settings, [$this->http, 'checkDeadline']]);
+                    $engine = pluginApp(TranslationEngine::class, [$this->store, $this->gateway, $settings, function () { $this->http->checkDeadline(); }]);
                     return $engine->run($candidate, true);
                 },
                 function ($deadline) { $this->http->setDeadline($deadline); },
