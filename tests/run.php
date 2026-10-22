@@ -2,6 +2,7 @@
 require __DIR__ . '/../src/Core/ProcessingPause.php';
 require __DIR__ . '/../src/Core/NightlyBatch.php';
 require __DIR__ . '/../src/Core/TranslationEngine.php';
+require __DIR__ . '/../src/Migrations/CheckNightlyRuntime.php';
 use WaldorfshopTranslations\Core\TranslationEngine as Engine;
 class MemoryStore
 {
