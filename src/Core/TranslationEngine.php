@@ -14,7 +14,7 @@ class TranslationEngine
     private $targets;
     private $checkpoint;
 
-    public function __construct($store, $gateway, array $settings, callable $checkpoint = null)
+    public function __construct($store, $gateway, array $settings, \Closure $checkpoint = null)
     {
         $this->store = $store;
         $this->gateway = $gateway;
@@ -184,7 +184,7 @@ class TranslationEngine
             foreach ($this->targets as $lang => $code) {
                 foreach ($job['targets'][$lang]['needed'] as $field => $source) {
                     if (isset($job['targets'][$lang]['changes'][$field])) { continue; }
-                    if ($this->checkpoint !== null) { ($this->checkpoint)(); }
+                    if ($this->checkpoint !== null) { $this->checkpoint->__invoke(); }
                     $options = ['source_lang' => 'DE', 'target_lang' => $code, 'preserve_formatting' => true, 'context' => $this->settings['context'] . "\n" . $job['source']['name']];
                     if (!empty($job['policy']['glossary_id'])) { $options['glossary_id'] = $job['policy']['glossary_id']; }
                     if (!empty($this->settings['formality'][$lang])) { $options['formality'] = 'prefer_less'; }
