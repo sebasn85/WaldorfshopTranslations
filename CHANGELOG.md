@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 — 2026-10-22 (prepared, not deployed)
+
+### Added
+- Daily durable translation queue during 02:00–08:00 Europe/Berlin, driven by the existing 15-minute cron. Snapshot once per local day, persist pages of 100 candidates and resume up to 25 articles / five minutes per invocation.
+- Skip existing blocked/review jobs without unblocking them. Isolate article validation failures, recheck triggers, and resume after temporary time, API and budget pauses using existing paid caches.
+- Bound outbound requests by the package deadline and end of the night window. Keep actual-source, number, HTML, URL and readback safeguards.
+- Expose nightly progress and setup failures through the existing protected status route. Report API release 0.3.0 consistently.
+- 46 added tests for 110 total, covering queue/package boundaries, 120 articles, DST, lock release, cancelled triggers, shared outages, budget stops and crash recovery with real worker logic.
+
+### Deployment notes
+- Prepared in an isolated local feature branch from the available 0.2.3 source snapshot (upstream base b91023cd1a8b04177df73fabcf81f9b3d4622973).
+- External repository publication and Plenty test build are pending because connected browser access is currently unavailable. No live set, configuration, tag, budget or article has been changed by this preparation.
+- Apply these changes to the full existing repository; this local checkout is a source snapshot and does not include all SDK/provider/library files from the full plugin.
+- A separate concrete approval remains required immediately before any live deployment.
+
 ## 0.2.3 — 2026-10-21 (test release)
 
 ### Fixed
