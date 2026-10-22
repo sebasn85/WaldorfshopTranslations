@@ -1,6 +1,6 @@
-# WaldorfshopTranslations 0.2.3
+# WaldorfshopTranslations 0.3.0
 
-Konfigurierbares Plenty-Plugin für deutsche Artikeltexte → ausgewählte Zielsprachen mit DeepL. Testversion: keine automatische Aktivierung durch Installation oder Update. Ein realer Ein-Artikel-Test der Version 0.1.2 hat alle 20 Textfelder und den vollständigen Tag-Wechsel bestätigt; die neue Konfigurationsversion wird separat im Testset geprüft.
+Konfigurierbares Plenty-Plugin für deutsche Artikeltexte → ausgewählte Zielsprachen mit DeepL. Version 0.3.0 ergänzt eine tägliche Nachtwarteschlange. Die Änderung ist lokal getestet; der Plenty-Testbuild und die gesonderte Live-Freigabe stehen noch aus.
 
 ## Einrichtung in Plenty
 
@@ -27,7 +27,19 @@ Ab Version 0.2.3 werden äußere ASCII-Leerzeichen in Klartextübersetzungen vor
 
 Globale Datenbanksperre gegen parallele Läufe, dauerhafte Jobs für Teilfehler, Antwortcache und Monatsbudget bleiben erhalten. Sprache, Variantenwahl, Tag-IDs, Glossarinhalt und Kontext sind Teil der Verarbeitungspolitik. Änderungen dieser Einstellungen nach einer Teilübernahme blockieren die automatische Fortsetzung. Ein Vorschaujob ohne Teilübernahme darf neu geplant werden. Budgets bereits vorhandener Installationen bleiben erhalten; neue Shops übernehmen keine Waldorfshop-Pilotverbräuche.
 
-Der Cron verarbeitet alle 15 Minuten maximal einen Artikel, wenn beide Betriebsschalter aktiv sind. `blocked` und `review_required` werden automatisch übersprungen. Kostenpflichtige Anfragen und Artikel-Schreibzugriffe werden nicht blind wiederholt. Nach einem harten Prozessabbruch eine verwaiste Sperre erst administrativ lösen, wenn kein Worker mehr läuft.
+## Nachtlauf ab Version 0.3.0
+
+Der vorhandene 15-Minuten-Cron bleibt der Taktgeber. Wenn beide Betriebsschalter aktiv sind, arbeitet er im Zeitfenster **02:00 bis 08:00 Uhr Europe/Berlin**. Sommer- und Winterzeit werden ausdrücklich berücksichtigt. Außerhalb dieses Fensters werden keine automatischen Übersetzungsanfragen gestartet. Der geschützte manuelle Pilot bleibt separat verfügbar.
+
+Beim ersten Nacht-Takt wird einmal pro lokalem Kalendertag ein Stand aller mit dem konfigurierten Auslöser markierten Artikel aufgenommen. Dieser Stand wird nach Artikel-ID sortiert in Seiten von höchstens 100 Artikeln gespeichert. Pro Takt werden bis zu 25 Artikel abgearbeitet, mit einem kooperativen Zeitlimit von fünf Minuten und spätestens bis 08:00 Uhr. Vor weiteren HTTP-Anfragen wird das Zeitlimit geprüft; eine bereits laufende Anfrage kann noch zu Ende laufen. Der nächste Cron setzt am gespeicherten Fortschritt an.
+
+Erfolgreiche Artikel behalten den bisherigen vollständigen Ablauf einschließlich Rückleseprüfung, Vergleichsstand, Prüftag und Entfernen des Auslösers. `blocked` und `review_required` werden nicht automatisch entsperrt. Ein einzelner Validierungsfehler hält die übrigen Artikel nicht auf. Entfernte Auslöser werden vor der Verarbeitung erneut geprüft; danach beginnt für diesen Eintrag keine neue Übersetzung. Nach Beginn der täglichen Aufnahme neu gesetzte Tags warten auf die nächste Nacht.
+
+Zeitunterbrechungen, gemeinsame API-Ausfälle und Monatslimits werden als Pause gespeichert. Bereits bezahlte, gespeicherte Übersetzungsantworten bleiben für die Fortsetzung erhalten. HTTP 429, Anmeldeprobleme und Dienstfehler pausieren das Paket, statt weitere Artikel zu blockieren. Eindeutig abgelehnte einzelne Übersetzungsanfragen bleiben Artikelfehler. Bei einer Budgetpause folgen in derselben Nacht keine weiteren Übersetzungsversuche. Offene Artikel behalten ihren Auslöser und werden in der nächsten Nacht erneut berücksichtigt; die Limits bleiben unverändert wirksam. Eine vollständige Abarbeitung bis morgens hängt deshalb von Laufzeit, Dienstverfügbarkeit und verfügbarem Budget ab.
+
+Ändert sich die Verarbeitungspolitik während eines begonnenen Nachtlaufs, pausiert dieser zur Prüfung. Der Status-Endpunkt zeigt zusätzlich `nightly_run` mit Gesamtzahl, Fortschritt, Ergebnissen und letztem Problem sowie `nightly_issue` für Fehler vor der Warteschlangenaufnahme. `status=complete` beschreibt eine fertig durchlaufene Warteschlange; die Zähler `failed`, `review_required` und `skipped` zeigen verbleibenden Prüfbedarf.
+
+Globale Sperre, Zahlen-/HTML-Schutz, URL-Ausschluss und Geheimnisgrenzen bleiben erhalten. Nach einem harten Prozessabbruch eine verwaiste Sperre erst administrativ lösen, wenn kein Worker mehr läuft. Ein Update aktiviert keine zuvor ausgeschaltete Installation und ändert weder Tags noch Budgets.
 
 ## Geschützte Schnittstellen
 
@@ -43,7 +55,7 @@ Erforderliche Plenty-Rechte: Artikel und Varianten lesen; Artikeltexte lesen, er
 
 ## Tests und Veröffentlichung
 
-`php tests/run.php` führt 64 Regressionstests aus, einschließlich Plenty-Leerzeichenbehandlung, Wiederaufnahme bestehender Teilaufträge ohne neue Übersetzungsanfragen oder Textschreibzugriffe, Felderweiterung, HTML-Schutz, Titellängen und Ausschluss von URL-Änderungen. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins.
+`php tests/run.php` führt 110 Regressionstests aus. Enthalten sind eine simulierte Warteschlange mit 120 Artikeln, Fortsetzung zwischen Paketen, Sommer-/Winterzeit, Tageswechsel, entfernte Tags, einzelne Artikelfehler, API-/Budgetpausen, ein Prozessabbruch nach erfolgreicher Artikelübernahme und die vorhandenen Schutzprüfungen. Runner, Übersetzungs-Engine und HTTP-Grenze werden dabei mit ersetzten externen Schnittstellen tatsächlich ausgeführt. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins. Die lokalen Tests ersetzen weder den Plenty-Codecheck noch einen Testbuild in einem nachweislich unverknüpften Set.
 
 Die Marketplace-Veröffentlichung ist ein separater Schritt: Partnerregistrierung, endgültiger Produktname, Kategorie und Produktmetadaten, Supportkontakt, vollständige DE-/EN-Anleitung, Paketprüfung, Reviewzugänge und Plenty-Review. Diese Entwicklungsversion wurde nicht eingereicht und ist keine Marketplace-Zulassung. Die historischen Klassen `Glossary` und `InitialBudget` aus dem privaten Pilot werden seit 0.2.0 nicht mehr zur Laufzeit verwendet und sind vor einer öffentlichen Paketabgabe zu bereinigen.
 
