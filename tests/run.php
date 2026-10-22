@@ -1,4 +1,6 @@
 <?php
+require __DIR__ . '/../src/Core/ProcessingPause.php';
+require __DIR__ . '/../src/Core/NightlyBatch.php';
 require __DIR__ . '/../src/Core/TranslationEngine.php';
 use WaldorfshopTranslations\Core\TranslationEngine as Engine;
 class MemoryStore
@@ -146,6 +148,12 @@ require __DIR__ . '/fields-fixture.php';
 $tests += fieldCoverageTests();
 require __DIR__ . '/readback-fixture.php';
 $tests += readbackTests();
+require __DIR__ . '/nightly-fixture.php';
+$tests += nightlyTests();
+require __DIR__ . '/nightly-runner-fixture.php';
+$tests += nightlyRunnerTests();
+require __DIR__ . '/nightly-http-fixture.php';
+$tests += nightlyHttpTests();
 $failed=0;
 foreach($tests as $name=>$test){try{$test();echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: ".$e->getMessage()."\n";}}
 echo count($tests)." tests; $failed failures\n";
