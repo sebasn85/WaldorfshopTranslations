@@ -7,6 +7,7 @@ use WaldorfshopTranslations\Services\Runner;
 use WaldorfshopTranslations\Services\HttpClient;
 class TranslationController extends Controller
 {
+    const RELEASE = '0.3.0';
     private function identityId(array $data): int
     {
         $id = (int)($data['id'] ?? 0);
@@ -39,9 +40,9 @@ class TranslationController extends Controller
         }
     }
     public function configurationCheck(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->configurationCheck() + ['release' => '0.2.1']; }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->configurationCheck() + ['release' => self::RELEASE]; }
     public function status(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->status() + ['release' => '0.2.1']; }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->status() + ['release' => self::RELEASE]; }
     public function pilot(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
-    { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot() + ['release' => '0.2.1']; }
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot() + ['release' => self::RELEASE]; }
 }
