@@ -28,6 +28,9 @@ function nightFixture(int $count = 3): array
 function nightlyTests(): array
 {
     return [
+        'build smoke check validates SDK date factories and explicit closure calls'=>function(){
+            (new \WaldorfshopTranslations\Migrations\CheckNightlyRuntime())->run();
+        },
         'nightly daytime performs no API work and creates no queue'=>function(){
             [$s,$v,$b]=nightFixture();$v->now=strtotime('2026-10-22T10:00:00Z');
             expect($b->run()['status']==='scheduled');expect($v->settings_calls===0 && $v->candidate_calls===0 && !$v->calls && !$v->deadlines);expect($s->get('nightly-run')===null);
