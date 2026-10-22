@@ -16,7 +16,7 @@ class NightlyBatch
     private $deadline;
     private $clock;
 
-    public function __construct($store, callable $settings, callable $candidates, callable $worker, callable $deadline, callable $clock = null)
+    public function __construct($store, \Closure $settings, \Closure $candidates, \Closure $worker, \Closure $deadline, \Closure $clock = null)
     {
         $this->store = $store;
         $this->settings = $settings;
@@ -27,14 +27,14 @@ class NightlyBatch
     }
     private static function localTime(int $timestamp): \DateTimeImmutable
     {
-        return (new \DateTimeImmutable('@' . $timestamp))->setTimezone(new \DateTimeZone('Europe/Berlin'));
+        return pluginApp(\DateTimeImmutable::class, ['@' . $timestamp])->setTimezone(pluginApp(\DateTimeZone::class, ['Europe/Berlin']));
     }
     public static function inWindow(int $timestamp): bool
     {
         $hour = (int)self::localTime($timestamp)->format('G');
         return $hour >= self::START_HOUR && $hour < self::END_HOUR;
     }
-    private function now(): int { return ($this->clock)(); }
+    private function now(): int { return $this->clock->__invoke(); }
     private function save(array $run): array
     {
         $run['updated_at'] = gmdate('c', $this->now());
@@ -57,10 +57,10 @@ class NightlyBatch
         if (is_array($run) && $run['day'] === $day && $run['status'] === 'complete') { return $run; }
         if (is_array($run) && $run['day'] === $day && $run['status'] === 'budget_paused' && ($run['budget_month'] ?? '') === gmdate('Y-m', $started)) { return $run; }
         $nightEnd = self::localTime($started)->setTime(self::END_HOUR, 0)->getTimestamp();
-        ($this->deadline)(min($started + self::MAX_SECONDS, $nightEnd));
+        $this->deadline->__invoke(min($started + self::MAX_SECONDS, $nightEnd));
         try {
             try {
-                $settings = ($this->settings)();
+                $settings = $this->settings->__invoke();
                 $policy = TranslationEngine::hash($settings['policy']);
                 if (is_array($run) && $run['day'] === $day && $run['policy_hash'] !== $policy) {
                     $run['status'] = 'policy_changed';
@@ -68,7 +68,7 @@ class NightlyBatch
                     return $this->save($run);
                 }
                 if (!is_array($run) || $run['day'] !== $day) {
-                    $queue = ($this->candidates)();
+                    $queue = $this->candidates->__invoke();
                     usort($queue, function ($a, $b) { return $a['item_id'] <=> $b['item_id']; });
                     // Fixed page keys bound row size; day/policy guards detect incomplete snapshots.
                     foreach (array_chunk($queue, self::QUEUE_PAGE_SIZE) as $page => $entries) {
@@ -116,7 +116,7 @@ class NightlyBatch
                 $run = $this->save($run);
                 $attempts++;
                 try {
-                    $result = ($this->worker)($candidate, $settings, $recovering);
+                    $result = $this->worker->__invoke($candidate, $settings, $recovering);
                     if (!in_array($result['status'] ?? '', ['complete', 'review_required', 'cancelled'], true)) { throw new \RuntimeException('Unerwartetes Verarbeitungsergebnis.'); }
                     $run[$result['status']]++;
                     $this->store->put('last-result', $result + ['at'=>gmdate('c', $this->now()), 'kind'=>'automatic']);
@@ -135,7 +135,7 @@ class NightlyBatch
             $run['finished_at'] = gmdate('c', $this->now());
             return $this->save($run);
         } finally {
-            ($this->deadline)(0);
+            $this->deadline->__invoke(0);
         }
     }
 }
