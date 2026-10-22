@@ -8,6 +8,6 @@
   "description": "Konfigurierbare Plenty-Artikelübersetzung mit DeepL, Glossar und feldweisem Änderungsvergleich.",
   "author": "Universnatur GmbH",
   "serviceProvider": "WaldorfshopTranslations\\Providers\\TranslationServiceProvider",
-  "runOnBuild": ["WaldorfshopTranslations\\Migrations\\CreateState"],
+  "runOnBuild": ["WaldorfshopTranslations\\Migrations\\CreateState", "WaldorfshopTranslations\\Migrations\\CheckNightlyRuntime"],
   "dependencies": {"guzzlehttp/guzzle": "7.15.5"}
 }
