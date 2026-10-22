@@ -12,12 +12,14 @@ class TranslationEngine
     private $gateway;
     private $settings;
     private $targets;
+    private $checkpoint;
 
-    public function __construct($store, $gateway, array $settings)
+    public function __construct($store, $gateway, array $settings, callable $checkpoint = null)
     {
         $this->store = $store;
         $this->gateway = $gateway;
         $this->settings = $settings;
+        $this->checkpoint = $checkpoint;
         $this->targets = $settings['targets'] ?? self::TARGETS;
         if (!$this->targets) { throw new \RuntimeException('Mindestens eine Zielsprache auswählen.'); }
     }
@@ -146,7 +148,7 @@ class TranslationEngine
         $items = $budget['items'];
         if (!in_array($itemId, $items, true)) { $items[] = $itemId; }
         if (count($items) > $this->settings['monthly_items'] || $budget['characters'] + $characters > $this->settings['monthly_characters']) {
-            throw new \RuntimeException('Monatslimit erreicht.');
+            throw new ProcessingPause('budget', 'Monatslimit erreicht.');
         }
         $budget['items'] = $items;
         $budget['characters'] += $characters;
@@ -182,6 +184,7 @@ class TranslationEngine
             foreach ($this->targets as $lang => $code) {
                 foreach ($job['targets'][$lang]['needed'] as $field => $source) {
                     if (isset($job['targets'][$lang]['changes'][$field])) { continue; }
+                    if ($this->checkpoint !== null) { ($this->checkpoint)(); }
                     $options = ['source_lang' => 'DE', 'target_lang' => $code, 'preserve_formatting' => true, 'context' => $this->settings['context'] . "\n" . $job['source']['name']];
                     if (!empty($job['policy']['glossary_id'])) { $options['glossary_id'] = $job['policy']['glossary_id']; }
                     if (!empty($this->settings['formality'][$lang])) { $options['formality'] = 'prefer_less'; }
@@ -262,7 +265,8 @@ class TranslationEngine
             $job['status'] = 'complete'; $this->store->put($key, $job);
             return ['item_id' => $candidate['item_id'], 'status' => 'complete'];
         } catch (\Throwable $error) {
-            $job['status'] = 'blocked'; $job['error'] = 'Verarbeitung fehlgeschlagen; Fehlercode ' . get_class($error);
+            $job['status'] = $error instanceof ProcessingPause ? 'paused' : 'blocked';
+            $job['error'] = $error instanceof ProcessingPause ? $error->getMessage() : 'Verarbeitung fehlgeschlagen; Fehlercode ' . get_class($error);
             $this->store->put($key, $job);
             throw $error;
         }
