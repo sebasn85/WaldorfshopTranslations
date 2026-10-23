@@ -14,7 +14,8 @@ class CheckRecoveryRuntime
         try { TranslationEngine::validate('90 cm', '91 cm', 'name'); }
         catch (TranslationIssue $error) { $blocked = $error->issueCode() === 'numbers_changed'; }
         if (!$blocked) { throw new \RuntimeException('Zahlenprüfung im SDK fehlgeschlagen.'); }
-        $issue = TranslationIssue::details(new TranslationIssue('probe', 'Prüfung'));
+        try { throw new TranslationIssue('probe', 'Prüfung'); }
+        catch (TranslationIssue $error) { $issue = TranslationIssue::details($error); }
         if (($issue['code'] ?? '') !== 'probe') { throw new \RuntimeException('Fehlerdiagnose im SDK fehlgeschlagen.'); }
     }
 }
