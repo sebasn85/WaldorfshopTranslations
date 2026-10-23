@@ -24,7 +24,7 @@ class InspectConsumption
     {
         $budget = $store->get('budget:' . gmdate('Y-m')) ?? [];
         $run = $store->get('nightly-run') ?? [];
-        $report = ['probe'=>'consumption-read-only-2026-10-23','at'=>gmdate('c'),
+        $report = ['probe'=>'recovery-details-read-only-2026-10-23','at'=>gmdate('c'),
             'internal_reserved_characters'=>$budget['characters'] ?? 0,
             'budget_article_count'=>count($budget['items'] ?? []), 'articles'=>[], 'queue_states'=>[], 'queue_issues'=>[], 'languages'=>[]];
         try {
@@ -64,6 +64,10 @@ class InspectConsumption
                 'status'=>$job['status'],'write_started'=>!empty($job['write_started']), 'read_error'=>$readError,
                 'validation'=>isset($job['validation_error']) ? ['language'=>$job['validation_error']['language'],'field'=>$job['validation_error']['field'],'message'=>$job['validation_error']['message']] : null,
                 'conflicts'=>$job['conflicts'] ?? [], 'languages'=>[]];
+            $entry['validation_sample'] = $job['validation_error'] ?? null;
+            $entry['source_matches'] = $readError === null ? TranslationEngine::hash(array_intersect_key(array_merge(array_fill_keys(TranslationEngine::FIELDS, ''), $rows['de'] ?? []), array_fill_keys(TranslationEngine::FIELDS, true))) === $job['source_hash'] : null;
+            $entry['legacy_error'] = $job['error'] ?? null;
+            $entry['first_unfinished'] = null;
             foreach (($job['targets'] ?? []) as $lang => $target) {
                 $detail = ['prepared_fields'=>count($target['changes'] ?? []),'prepared_source_characters'=>0,'matching_current'=>[],'different_current'=>[],'changed_from_before'=>[]];
                 foreach (($target['changes'] ?? []) as $field => $translated) {
@@ -75,6 +79,17 @@ class InspectConsumption
                         if (!$this->same($field, $current, $target['before'][$field] ?? '')) { $detail['changed_from_before'][] = $field; }
                     }
                 }
+                if ($entry['first_unfinished'] === null) {
+                    foreach (($target['needed'] ?? []) as $field => $source) {
+                        if (isset($target['changes'][$field])) { continue; }
+                        $options = ['source_lang'=>'DE','target_lang'=>($job['policy']['targets'][$lang] ?? TranslationEngine::TARGETS[$lang]),'preserve_formatting'=>true,'context'=>$http->settings()['context'] . "\n" . $job['source']['name']];
+                        if (!empty($job['policy']['glossary_id'])) { $options['glossary_id'] = $job['policy']['glossary_id']; }
+                        if (in_array($field, TranslationEngine::HTML_FIELDS, true)) { $options['tag_handling']='html'; $options['tag_handling_version']='v2'; }
+                        $cached = $store->get('cache:' . TranslationEngine::hash([$source,$options,$field,$job['policy']]));
+                        $entry['first_unfinished'] = ['language'=>$lang,'field'=>$field,'source'=>$source,'cached'=>$cached,'current'=>$rows[$lang][$field] ?? '','before'=>$target['before'][$field] ?? ''];
+                        break;
+                    }
+                }
                 $entry['languages'][$lang] = $detail;
                 if (!isset($report['languages'][$lang])) { $report['languages'][$lang] = ['prepared_fields'=>0,'prepared_source_characters'=>0,'matching_current'=>0,'different_current'=>0,'changed_from_before'=>0]; }
                 foreach (['prepared_fields','prepared_source_characters'] as $k) { $report['languages'][$lang][$k] += $detail[$k]; }
@@ -82,6 +97,6 @@ class InspectConsumption
             }
             $report['articles'][] = $entry;
         }
-        $this->getLogger('ConsumptionReadOnly20261023')->error('Read-only translation consumption audit', ['report_json'=>json_encode($report, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+        $this->getLogger('RecoveryDetailsReadOnly20261023')->error('Read-only translation consumption audit', ['report_json'=>json_encode($report, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
     }
 }
