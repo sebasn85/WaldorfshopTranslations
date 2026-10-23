@@ -2,20 +2,16 @@
   "name": "WaldorfshopTranslations",
   "namespace": "WaldorfshopTranslations",
   "type": "general",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "license": "proprietary",
   "isClosedSource": true,
   "description": "Konfigurierbare Plenty-Artikelübersetzung mit DeepL, Glossar und feldweisem Änderungsvergleich.",
   "author": "Universnatur GmbH",
   "serviceProvider": "WaldorfshopTranslations\\Providers\\TranslationServiceProvider",
   "runOnBuild": [
-    "WaldorfshopTranslations\\Migrations\\CreateState",
-    "WaldorfshopTranslations\\Migrations\\CheckNightlyRuntime",
-    "WaldorfshopTranslations\\Migrations\\CheckRecoveryRuntime",
-    "WaldorfshopTranslations\\Migrations\\InspectRecoveryCheckpoints"
+    "WaldorfshopTranslations\\Migrations\\InspectRecoverySolo"
   ],
   "dependencies": {
     "guzzlehttp/guzzle": "7.15.5"
   }
 }
-
