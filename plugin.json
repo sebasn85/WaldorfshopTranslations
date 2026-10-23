@@ -12,7 +12,7 @@
     "WaldorfshopTranslations\\Migrations\\CreateState",
     "WaldorfshopTranslations\\Migrations\\CheckNightlyRuntime",
     "WaldorfshopTranslations\\Migrations\\CheckRecoveryRuntime",
-    "WaldorfshopTranslations\\Migrations\\InspectRecoveryPreview"
+    "WaldorfshopTranslations\\Migrations\\InspectRecoveryVerified"
   ],
   "dependencies": {
     "guzzlehttp/guzzle": "7.15.5"
