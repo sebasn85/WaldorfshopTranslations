@@ -11,9 +11,11 @@
   "runOnBuild": [
     "WaldorfshopTranslations\\Migrations\\CreateState",
     "WaldorfshopTranslations\\Migrations\\CheckNightlyRuntime",
-    "WaldorfshopTranslations\\Migrations\\CheckRecoveryRuntime"
+    "WaldorfshopTranslations\\Migrations\\CheckRecoveryRuntime",
+    "WaldorfshopTranslations\\Migrations\\InspectRecoveryPreview"
   ],
   "dependencies": {
     "guzzlehttp/guzzle": "7.15.5"
   }
 }
+
