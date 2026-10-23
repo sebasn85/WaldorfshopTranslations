@@ -38,25 +38,50 @@ class TranslationEngine
     public static function checkMarkup(string $text): void
     {
         if (preg_match('/<\s*(script|iframe|object|embed|form|style)\b|\bon[a-z]+\s*=|(?:javascript|vbscript)\s*:/i', $text)) {
-            throw new \RuntimeException('Aktives HTML: Artikel manuell prüfen.');
+            throw new TranslationIssue('active_html', 'Aktives HTML: Artikel manuell prüfen.');
         }
+    }
+
+    private static function comparableTag(string $tag): array
+    {
+        if (!preg_match('~^<(\/?)([A-Za-z][A-Za-z0-9:_-]*)(.*?)(\/?)>$~sD', $tag, $parts)) { return ['literal'=>$tag]; }
+        $attributes = []; $tail = $parts[3]; $offset = 0;
+        preg_match_all('~\s+([A-Za-z_:][A-Za-z0-9_.:-]*)(?:\s*=\s*(?:"([^"]*)"|\x27([^\x27]*)\x27|([^\s"\x27=<>`]+)))?~s', $tail, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+        foreach ($matches as $attribute) {
+            if (trim(substr($tail, $offset, $attribute[0][1] - $offset)) !== '') { return ['literal'=>$tag]; }
+            $name = $attribute[1][0];
+            if (array_key_exists($name, $attributes)) { return ['literal'=>$tag]; }
+            $value = null;
+            foreach ([2,3,4] as $index) {
+                if (isset($attribute[$index]) && $attribute[$index][1] >= 0) { $value = html_entity_decode($attribute[$index][0], ENT_QUOTES | ENT_HTML5, 'UTF-8'); break; }
+            }
+            $attributes[$name] = $value; $offset = $attribute[0][1] + strlen($attribute[0][0]);
+        }
+        if (trim(substr($tail, $offset)) !== '') { return ['literal'=>$tag]; }
+        ksort($attributes);
+        $void = in_array(strtolower($parts[2]), ['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'], true);
+        return ['name'=>$parts[2], 'closing'=>$parts[1] !== '', 'self_closing'=>!$void && $parts[4] !== '', 'attributes'=>$attributes];
     }
 
     public static function validate(string $source, string $target, string $field): void
     {
         if (self::blank($target)) {
-            throw new \RuntimeException('Leere Übersetzung.');
+            throw new TranslationIssue('empty_translation', 'Leere Übersetzung.');
         }
         self::checkMarkup($source);
         if (in_array($field, self::HTML_FIELDS, true)) {
-            // Deliberately strict: every original tag/attribute must remain exact.
+            // Preserve tag order and every attribute value. Quote style, attribute
+            // order and the optional slash on HTML void tags are equivalent.
             preg_match_all('/<[^>]*>/u', $source, $a);
             preg_match_all('/<[^>]*>/u', $target, $b);
-            if ($a[0] !== $b[0]) {
-                throw new \RuntimeException('HTML-Struktur oder Attribute verändert.');
+            $sourceTags = []; $targetTags = [];
+            foreach ($a[0] as $tag) { $sourceTags[] = self::comparableTag($tag); }
+            foreach ($b[0] as $tag) { $targetTags[] = self::comparableTag($tag); }
+            if ($sourceTags !== $targetTags) {
+                throw new TranslationIssue('html_changed', 'HTML-Struktur oder Attribute verändert.');
             }
         } elseif ($target !== strip_tags($target)) {
-            throw new \RuntimeException('HTML in Klartextfeld.');
+            throw new TranslationIssue('html_in_plain_text', 'HTML in Klartextfeld.');
         }
         // HTML entities such as French apostrophe &#x27; are characters, not numbers.
         $sourceText = html_entity_decode(strip_tags($source), ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -67,10 +92,10 @@ class TranslationEngine
         $y = array_map(function ($n) { return preg_replace('/\D/', '', $n); }, $b[0]);
         sort($x); sort($y);
         if ($x !== $y) {
-            throw new \RuntimeException('Zahlen verändert.');
+            throw new TranslationIssue('numbers_changed', 'Zahlen verändert.');
         }
         if (in_array($field, self::TITLE_FIELDS, true) && self::characters($target) > 240) {
-            throw new \RuntimeException('Artikelname oder HTML-Titel über 240 Zeichen.');
+            throw new TranslationIssue('title_too_long', 'Artikelname oder HTML-Titel über 240 Zeichen.');
         }
     }
 
@@ -88,7 +113,7 @@ class TranslationEngine
         foreach (self::FIELDS as $field) {
             $value = $row[$field] ?? '';
             if (!is_string($value)) {
-                throw new \RuntimeException('Ungültiges Textformat.');
+                throw new TranslationIssue('invalid_text', 'Ungültiges Textformat.');
             }
             $result[$field] = $value;
         }
@@ -101,12 +126,15 @@ class TranslationEngine
         return in_array($field, self::HTML_FIELDS, true) ? $text : trim($text, " \t\n\r\v");
     }
 
+    public static function sameStoredText(string $field, string $a, string $b): bool
+    { return self::storedText($field, $a) === self::storedText($field, $b); }
+
     public function plan(array $candidate): array
     {
         $rows = $this->gateway->texts($candidate);
         $source = $this->selected($rows['de'] ?? []);
         if (self::blank($source['name'])) {
-            throw new \RuntimeException('Deutscher Artikelname fehlt.');
+            throw new TranslationIssue('missing_source_name', 'Deutscher Artikelname fehlt.');
         }
         $baseline = $this->store->get('baseline:' . $candidate['item_id']) ?? [];
         $targets = []; $conflicts = [];
@@ -164,7 +192,7 @@ class TranslationEngine
         if ($job && $job['status'] !== 'complete') {
             if ($job['source_hash'] !== $fresh['source_hash'] || $job['policy'] !== $fresh['policy']) {
                 if ($job['write_started']) {
-                    throw new \RuntimeException('Quelle oder Glossar nach Teilübernahme geändert; manuell klären.');
+                    throw new TranslationIssue('policy_after_partial_write', 'Quelle oder Glossar nach Teilübernahme geändert; manuell klären.');
                 }
                 $job = null;
             } elseif (!$job['write_started']) {
@@ -180,10 +208,12 @@ class TranslationEngine
             return ['item_id' => $candidate['item_id'], 'status' => 'review_required', 'conflicts' => $job['conflicts']];
         }
         try {
+            $job['phase'] = 'translate';
             $this->gateway->verifyGlossary();
             foreach ($this->targets as $lang => $code) {
                 foreach ($job['targets'][$lang]['needed'] as $field => $source) {
-                    if (isset($job['targets'][$lang]['changes'][$field])) { continue; }
+                    $job['active_language'] = $lang; $job['active_field'] = $field;
+                    if (isset($job['targets'][$lang]['changes'][$field])) { self::validate($source, $job['targets'][$lang]['changes'][$field], $field); continue; }
                     if ($this->checkpoint !== null) { $this->checkpoint->__invoke(); }
                     $options = ['source_lang' => 'DE', 'target_lang' => $code, 'preserve_formatting' => true, 'context' => $this->settings['context'] . "\n" . $job['source']['name']];
                     if (!empty($job['policy']['glossary_id'])) { $options['glossary_id'] = $job['policy']['glossary_id']; }
@@ -194,11 +224,31 @@ class TranslationEngine
                     $cacheKey = 'cache:' . self::hash([$source, $options, $field, $job['policy']]);
                     $cached = $this->store->get($cacheKey);
                     if ($cached === null) {
+                        $requestKey = 'request:' . substr($cacheKey, 6);
+                        $priorRequest = $this->store->get($requestKey);
+                        if (is_array($priorRequest) && in_array($priorRequest['state'] ?? '', ['reserved','uncertain','responded'], true)) {
+                            throw new ProcessingPause('review', 'Frühere Übersetzungsanfrage ohne sicher gespeicherte Antwort; vor Wiederholung prüfen.');
+                        }
+                        $this->gateway->checkTranslationBudget($source);
                         $this->reserve($candidate['item_id'], self::characters($source));
-                        $translated = $this->gateway->translate($source, $options);
+                        $request = ['attempts'=>(int)($priorRequest['attempts'] ?? 0)+1,'total_reserved_characters'=>(int)($priorRequest['total_reserved_characters'] ?? 0)+self::characters($source),'item_id'=>$candidate['item_id'],'language'=>$lang,'field'=>$field,'source_characters'=>self::characters($source),'reserved_at'=>gmdate('c'),'state'=>'reserved'];
+                        $this->store->put($requestKey, $request);
+                        $job['requests'][$lang][$field] = $requestKey;
+                        $this->store->put($key, $job);
+                        try { $response = $this->gateway->translateWithUsage($source, $options); }
+                        catch (\Throwable $requestError) {
+                            $request['state'] = ($requestError instanceof TranslationIssue && $requestError->issueCode() === 'api_rejected') || ($requestError instanceof ProcessingPause && $requestError->confirmedNoCharge()) ? 'rejected' : 'uncertain';
+                            $request['failure'] = TranslationIssue::details($requestError);
+                            $this->store->put($requestKey, $request);
+                            throw $requestError;
+                        }
+                        $translated = $response['text'];
                         // Retain paid provider output even when validation rejects it.
                         // Every cached response is validated before it can be applied.
-                        $cached = ['text' => $translated]; $this->store->put($cacheKey, $cached);
+                        $cached = ['text'=>$translated, 'billed_characters'=>$response['billed_characters'], 'translated_at'=>gmdate('c'), 'item_id'=>$candidate['item_id'], 'language'=>$lang, 'field'=>$field];
+                        $this->store->put($cacheKey, $cached);
+                        $request['state'] = 'responded'; $request['billed_characters'] = $response['billed_characters'];
+                        $this->store->put($requestKey, $request);
                     }
                     try {
                         self::validate($source, $cached['text'], $field);
@@ -214,41 +264,44 @@ class TranslationEngine
             }
             $job['status'] = 'prepared'; $this->store->put($key, $job);
             if (!$apply) { return ['item_id' => $candidate['item_id'], 'status' => 'prepared']; }
+            $job['phase'] = 'write';
             $taggingStarted = !empty($job['tagging_started']);
             if (!$taggingStarted && !$this->gateway->hasAnyTrigger($candidate)) {
-                throw new \RuntimeException('Auslöser-Tag entfernt.');
+                throw new TranslationIssue('trigger_removed', 'Auslöser-Tag entfernt.');
             }
             foreach ($this->targets as $lang => $code) {
+                $job['active_language'] = $lang; unset($job['active_field']);
                 $rows = $this->gateway->texts($candidate);
                 if (self::hash($this->selected($rows['de'] ?? [])) !== $job['source_hash']) {
-                    throw new \RuntimeException('Deutscher Text während Verarbeitung geändert.');
+                    throw new TranslationIssue('source_changed', 'Deutscher Text während Verarbeitung geändert.');
                 }
                 $current = $this->selected($rows[$lang] ?? []); $changes = [];
                 foreach ($job['targets'][$lang]['changes'] as $field => $value) {
                     $value = self::storedText($field, $value);
                     if (self::storedText($field, $current[$field]) === $value) { continue; }
                     if ($current[$field] !== $job['targets'][$lang]['before'][$field]) {
-                        throw new \RuntimeException('Zieltext während Verarbeitung geändert.');
+                        throw new TranslationIssue('target_changed', 'Zieltext während Verarbeitung geändert.');
                     }
                     $changes[$field] = $value;
                 }
                 if ($changes) {
                     $job['write_started'] = true; $job['status'] = 'applying'; $this->store->put($key, $job);
-                    if (!isset($rows[$lang]) && !isset($changes['name'])) { throw new \RuntimeException('Neue Sprache ohne Artikelname.'); }
+                    if (!isset($rows[$lang]) && !isset($changes['name'])) { throw new TranslationIssue('missing_target_name', 'Neue Sprache ohne Artikelname.'); }
                     $this->gateway->writeTexts($candidate, $lang, $changes, isset($rows[$lang]));
                 }
             }
+            $job['phase'] = 'readback';
             $rows = $this->gateway->texts($candidate);
-            if (self::hash($this->selected($rows['de'] ?? [])) !== $job['source_hash']) { throw new \RuntimeException('Quelle vor Rückleseprüfung geändert.'); }
+            if (self::hash($this->selected($rows['de'] ?? [])) !== $job['source_hash']) { throw new TranslationIssue('source_changed', 'Quelle vor Rückleseprüfung geändert.'); }
             foreach ($this->targets as $lang => $code) {
                 $current = $this->selected($rows[$lang] ?? []);
                 foreach ($job['targets'][$lang]['changes'] as $field => $value) {
                     if (self::storedText($field, $current[$field]) !== self::storedText($field, $value)) {
-                        throw new \RuntimeException('Rückleseprüfung fehlgeschlagen: ' . $lang . ':' . $field . '.');
+                        throw new TranslationIssue('readback_mismatch', 'Rückleseprüfung fehlgeschlagen: ' . $lang . ':' . $field . '.');
                     }
                 }
                 foreach ($job['source'] as $field => $source) {
-                    if (!self::blank($source) && self::blank($current[$field])) { throw new \RuntimeException('Übersetzung unvollständig.'); }
+                    if (!self::blank($source) && self::blank($current[$field])) { throw new TranslationIssue('incomplete_translation', 'Übersetzung unvollständig.'); }
                 }
             }
             $baseline = $this->store->get('baseline:' . $candidate['item_id']) ?? [];
@@ -259,14 +312,16 @@ class TranslationEngine
                 }
             }
             $this->store->put('baseline:' . $candidate['item_id'], $baseline);
+            $job['phase'] = 'tags';
             $job['tagging_started'] = true; $job['status'] = 'tagging'; $this->store->put($key, $job);
             foreach ($candidate['tagged_variation_ids'] as $id) { $this->gateway->addReviewTag($id); }
             foreach ($candidate['tagged_variation_ids'] as $id) { $this->gateway->removeTrigger($id); }
-            $job['status'] = 'complete'; $this->store->put($key, $job);
+            $job['status'] = 'complete'; unset($job['error'], $job['failure'], $job['active_language'], $job['active_field']); $this->store->put($key, $job);
             return ['item_id' => $candidate['item_id'], 'status' => 'complete'];
         } catch (\Throwable $error) {
             $job['status'] = $error instanceof ProcessingPause ? 'paused' : 'blocked';
-            $job['error'] = $error instanceof ProcessingPause ? $error->getMessage() : 'Verarbeitung fehlgeschlagen; Fehlercode ' . get_class($error);
+            $job['failure'] = TranslationIssue::details($error) + ['phase'=>$job['phase'] ?? 'prepare', 'language'=>$job['active_language'] ?? null, 'field'=>$job['active_field'] ?? null, 'at'=>gmdate('c')];
+            $job['error'] = $job['failure']['message'];
             $this->store->put($key, $job);
             throw $error;
         }

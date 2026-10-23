@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.3.0 — 2026-10-22 (prepared, not deployed)
+## 0.4.0 — 2026-10-23 (isolated test release)
+
+- Add operator-only recovery previews and token-bound resumes, including validated, explicitly reviewed field corrections. Existing paid cache entries remain reusable. No bulk unblock, automatic deletion or build-time recovery.
+- Revalidate prepared fields before applying them. Accept only equivalent HTML quoting, attribute order and void-tag notation while preserving tags, attributes, links and numeric checks.
+- Retain structured error codes with phase/language/field, and log bounded nightly outcomes without raw SDK exception contents.
+- Request provider-reported billed characters, record per-field request states, and hold ambiguous paid requests for review instead of repeating them blindly.
+- Expose account billing-period usage separately from the local calendar-month reservation. Check the account's current usage before new paid requests.
+- Add a pure SDK smoke check and test-only, read-only review/in-memory replay diagnostics. Production plugin metadata excludes the data-reading diagnostic migration.
+
+## 0.3.0 — 2026-10-22
 
 ### Added
 - Plenty SDK compatibility: explicit closure method calls and native date factories; a pure build-time runtime smoke check makes SDK failures visible before production deployment.

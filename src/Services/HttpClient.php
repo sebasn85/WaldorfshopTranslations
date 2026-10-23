@@ -3,6 +3,7 @@ namespace WaldorfshopTranslations\Services;
 use Plenty\Modules\Plugin\Libs\Contracts\LibraryCallContract;
 use Plenty\Plugin\ConfigRepository;
 use WaldorfshopTranslations\Core\ProcessingPause;
+use WaldorfshopTranslations\Core\TranslationIssue;
 
 class HttpClient
 {
@@ -46,9 +47,9 @@ class HttpClient
             $status = (int)($result['status'] ?? 0);
             if (($service === 'deepl' && $path === '/v2/translate' && in_array($status, [400, 413, 422], true)) ||
                 ($service === 'plenty' && strpos($path, '/rest/items/') === 0 && in_array($status, [400, 404, 409, 410, 413, 422], true))) {
-                throw new \RuntimeException($service . ': Artikelanfrage abgelehnt (HTTP ' . $status . ').');
+                throw new TranslationIssue('api_rejected', $service . ': Artikelanfrage abgelehnt (HTTP ' . $status . ').');
             }
-            throw new ProcessingPause('service', $service . ': API-Aufruf fehlgeschlagen (HTTP ' . (int)($result['status'] ?? 0) . ').');
+            throw new ProcessingPause('service', $service . ': API-Aufruf fehlgeschlagen (HTTP ' . (int)($result['status'] ?? 0) . ').', $status > 0);
         }
         return $result['data'];
     }

@@ -1,6 +1,26 @@
-# WaldorfshopTranslations 0.3.0
+# WaldorfshopTranslations 0.4.0
 
-Konfigurierbares Plenty-Plugin für deutsche Artikeltexte → ausgewählte Zielsprachen mit DeepL. Version 0.3.0 ergänzt eine tägliche Nachtwarteschlange. Die Änderung ist lokal getestet; der Plenty-Testbuild und die gesonderte Live-Freigabe stehen noch aus.
+Konfigurierbares Plenty-Plugin für deutsche Artikeltexte → ausgewählte Zielsprachen mit DeepL. Version 0.4.0 ergänzt geprüfte Wiederaufnahme, nachvollziehbare Fehler und eine getrennte Verbrauchsanzeige. Die Plenty-Prüfung erfolgt ausschließlich in einem unverknüpften Testset. Eine Live-Bereitstellung benötigt eine eigene Freigabe.
+
+## Wiederaufnahme ab Version 0.4.0
+
+Gesperrte Aufträge werden nicht pauschal freigegeben. Die OAuth-geschützte Steuerung erlaubt ausschließlich dem konfigurierten API-Benutzer folgende Schritte:
+
+1. `GET /rest/waldorfshop-translations/recovery-preview?itemId=123` prüft einen offenen Auftrag rein lesend. Die Antwort enthält wiederverwendbare Felder, fehlende Felder, einen konservativen maximalen neuen Zeichenumfang, offene Probleme und einen `review_token`. Die Prüfung schreibt weder Aufträge noch Artikel oder Tags.
+2. Falls eine konkrete gespeicherte Antwort falsch ist, kann `POST /rest/waldorfshop-translations/recovery-preview` zusätzlich `corrections` als Objekt Sprache → Feld → korrigierter Text erhalten. Zulässig sind nur bereits benötigte Textfelder dieses Auftrags. Auch Korrekturen müssen Zahlen-, HTML- und Längenprüfungen bestehen. URL-Felder bleiben ausgeschlossen. In diesem Schritt wird nichts gespeichert.
+3. Nach fachlicher Prüfung erhält `POST /rest/waldorfshop-translations/recovery-resume` dieselbe `itemId`, denselben `reviewToken` und dieselben optionalen `corrections`. Der Speicherschalter muss aktiv sein. Unter der globalen Sperre werden Quelle, Zieltexte, Auftrag, aktuelle Tags, Glossar und Einstellungen erneut verglichen. Eine inzwischen geänderte Vorschau wird abgewiesen. Bestehende Antworten bleiben erhalten und werden erneut validiert. Nur tatsächlich fehlende Felder dürfen neue Anfragen erzeugen.
+
+Fachlich falsche Zahlen werden nicht still durchgewunken. Eine bestätigte Feldkorrektur wird mit dem Auftrag dokumentiert und benötigt für dieses Feld keine neue Übersetzungsanfrage. Leere deutsche Felder mit bestehenden Zieltexten bleiben weiterhin ein Prüffall; sie werden nicht automatisch gelöscht.
+
+HTML-Tags müssen in derselben Reihenfolge und mit denselben Attributwerten erhalten bleiben. Gleichwertige Anführungszeichen, Attributreihenfolgen und die Schreibweisen `<br>`/`<br/>` werden akzeptiert. Neue Attribute, geänderte Links, geänderte Styles und zusätzliche oder entfernte Elemente bleiben gesperrt. Zahlenprüfungen bleiben aktiv.
+
+Neue Aufträge speichern Fehlercode, Phase, Sprache und Feld. Bekannte Pluginfehler liefern eine verständliche Meldung. Unbekannte SDK- oder HTTP-Ausnahmen geben keine Rohmeldungen mit möglichen Zugangsdaten aus. Die nächtlichen Arbeitspakete schreiben zusätzlich einen begrenzten Status ins Plenty-Protokoll.
+
+`GET /rest/waldorfshop-translations/usage` zeigt den tatsächlichen DeepL-Verbrauch im Abrechnungszeitraum und die konservative lokale Reservierung im Kalendermonat getrennt. Vor einer neuen Übersetzungsanfrage wird der DeepL-Verbrauch gegen das konfigurierte Zeichenlimit und ein eventuell niedrigeres Anbieterlimit geprüft. Andere gleichzeitig nutzende Anwendungen können den Kontoverbrauch verändern; der Anbieter-Kostenstopp bleibt unabhängig davon.
+
+Neue Antworten enthalten nach Möglichkeit die von DeepL mit `show_billed_characters` gemeldeten Zeichen. Anfragezustand, Artikel, Sprache, Feld und reservierte Zeichen werden gespeichert. Alte historische Reservierungen werden nicht rückwirkend umgeschrieben. Bei einer möglicherweise bezahlten Anfrage ohne sicher gespeicherte Antwort wird eine erneute Anfrage zur Prüfung angehalten. Bereits vorhandene Cache-Schlüssel bleiben unverändert, damit bezahlte Antworten weiterhin nutzbar sind.
+
+Die Klassen unter `Diagnostics` simulieren Artikel- und Tagänderungen ausschließlich im Speicher. `InspectRecoveryPreview` darf nur im `runOnBuild` eines ausdrücklich unverknüpften Testzweigs stehen. Die reguläre Version führt beim Build ausschließlich Schema- und reine Laufzeitprüfungen aus, keine Übersetzung oder Auftragsfreigabe.
 
 ## Einrichtung in Plenty
 
@@ -55,7 +75,7 @@ Erforderliche Plenty-Rechte: Artikel und Varianten lesen; Artikeltexte lesen, er
 
 ## Tests und Veröffentlichung
 
-`php tests/run.php` führt 111 Regressionstests aus. Enthalten sind eine simulierte Warteschlange mit 120 Artikeln, Fortsetzung zwischen Paketen, Sommer-/Winterzeit, Tageswechsel, entfernte Tags, einzelne Artikelfehler, API-/Budgetpausen, ein Prozessabbruch nach erfolgreicher Artikelübernahme und die vorhandenen Schutzprüfungen. Runner, Übersetzungs-Engine und HTTP-Grenze werden dabei mit ersetzten externen Schnittstellen tatsächlich ausgeführt. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins. Die lokalen Tests ersetzen weder den Plenty-Codecheck noch einen Testbuild in einem nachweislich unverknüpften Set.
+`php tests/run.php` führt 133 Regressionstests aus. Enthalten sind eine simulierte Warteschlange mit 120 Artikeln, Fortsetzung zwischen Paketen, Sommer-/Winterzeit, Tageswechsel, entfernte Tags, einzelne Artikelfehler, API-/Budgetpausen, ein Prozessabbruch nach erfolgreicher Artikelübernahme und die vorhandenen Schutzprüfungen. Runner, Übersetzungs-Engine und HTTP-Grenze werden dabei mit ersetzten externen Schnittstellen tatsächlich ausgeführt. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins. Die lokalen Tests ersetzen weder den Plenty-Codecheck noch einen Testbuild in einem nachweislich unverknüpften Set.
 
 Die Marketplace-Veröffentlichung ist ein separater Schritt: Partnerregistrierung, endgültiger Produktname, Kategorie und Produktmetadaten, Supportkontakt, vollständige DE-/EN-Anleitung, Paketprüfung, Reviewzugänge und Plenty-Review. Diese Entwicklungsversion wurde nicht eingereicht und ist keine Marketplace-Zulassung. Die historischen Klassen `Glossary` und `InitialBudget` aus dem privaten Pilot werden seit 0.2.0 nicht mehr zur Laufzeit verwendet und sind vor einer öffentlichen Paketabgabe zu bereinigen.
 

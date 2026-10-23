@@ -1,13 +1,15 @@
 <?php
 namespace WaldorfshopTranslations\Controllers;
 use Plenty\Plugin\Controller;
+use Plenty\Plugin\Http\Request;
+use WaldorfshopTranslations\Core\TranslationIssue;
 use Plenty\Modules\Authorization\Contracts\AuthorizedUserRepositoryContract;
 use Plenty\Modules\User\Contracts\UserRepositoryContract;
 use WaldorfshopTranslations\Services\Runner;
 use WaldorfshopTranslations\Services\HttpClient;
 class TranslationController extends Controller
 {
-    const RELEASE = '0.3.0';
+    const RELEASE = '0.4.0';
     private function identityId(array $data): int
     {
         $id = (int)($data['id'] ?? 0);
@@ -45,4 +47,25 @@ class TranslationController extends Controller
     { $this->assertOperator($users, $http, $currentUsers); return $runner->status() + ['release' => self::RELEASE]; }
     public function pilot(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
     { $this->assertOperator($users, $http, $currentUsers); return $runner->pilot() + ['release' => self::RELEASE]; }
+    private function recoveryItemId(Request $request): int
+    {
+        $value = $request->get('itemId');
+        if ((!is_int($value) && !is_string($value)) || !preg_match('/^[1-9][0-9]{0,9}$/D', (string)$value)) {
+            throw new TranslationIssue('invalid_item', 'Gültige Artikel-ID erforderlich.');
+        }
+        return (int)$value;
+    }
+    private function recoveryCorrections(Request $request): array
+    {
+        $values = $request->get('corrections', []);
+        if ($values === null) { return []; }
+        if (!is_array($values)) { throw new TranslationIssue('invalid_correction', 'Feldkorrekturen müssen als Objekt übergeben werden.'); }
+        return $values;
+    }
+    public function recoveryPreview(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers, Request $request)
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->recoveryPreview($this->recoveryItemId($request), $this->recoveryCorrections($request)) + ['release'=>self::RELEASE]; }
+    public function recoveryResume(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers, Request $request)
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->recoveryResume($this->recoveryItemId($request), is_string($request->get('reviewToken')) ? $request->get('reviewToken') : '', $this->recoveryCorrections($request)) + ['release'=>self::RELEASE]; }
+    public function usage(AuthorizedUserRepositoryContract $users, HttpClient $http, Runner $runner, UserRepositoryContract $currentUsers)
+    { $this->assertOperator($users, $http, $currentUsers); return $runner->providerUsage() + ['release'=>self::RELEASE]; }
 }

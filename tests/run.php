@@ -1,6 +1,8 @@
 <?php
 require __DIR__ . '/../src/Core/ProcessingPause.php';
 require __DIR__ . '/../src/Core/NightlyBatch.php';
+require __DIR__ . '/../src/Core/TranslationIssue.php';
+require __DIR__ . '/../src/Core/RecoveryReview.php';
 require __DIR__ . '/../src/Core/TranslationEngine.php';
 require __DIR__ . '/../src/Migrations/CheckNightlyRuntime.php';
 use WaldorfshopTranslations\Core\TranslationEngine as Engine;
@@ -30,6 +32,8 @@ class FakeGateway
     }
     public function texts($c) { return $this->rows; }
     public function verifyGlossary() {}
+    public function checkTranslationBudget($text) {}
+    public function translateWithUsage($text, $options) { return ['text'=>$this->translate($text, $options), 'billed_characters'=>null]; }
     public function translate($text, $options)
     {
         $this->calls++;
@@ -155,6 +159,10 @@ require __DIR__ . '/nightly-runner-fixture.php';
 $tests += nightlyRunnerTests();
 require __DIR__ . '/nightly-http-fixture.php';
 $tests += nightlyHttpTests();
+require __DIR__ . '/../src/Diagnostics/ReplayStore.php';
+require __DIR__ . '/../src/Diagnostics/ReplayGateway.php';
+require __DIR__ . '/recovery-fixture.php';
+$tests += recoveryTests();
 $failed=0;
 foreach($tests as $name=>$test){try{$test();echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: ".$e->getMessage()."\n";}}
 echo count($tests)." tests; $failed failures\n";

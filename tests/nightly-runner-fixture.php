@@ -31,6 +31,7 @@ namespace {
         public function hasAnyTrigger(array $candidate):bool{$this->active=$candidate['item_id'];return (bool)$this->workers[$this->active]->ready;}
         public function texts(array $candidate):array{$this->active=$candidate['item_id'];return $this->workers[$this->active]->rows;}
         public function verifyGlossary():void{}
+        public function checkTranslationBudget(string $source):void{}
         public function translate(string $source,array $options):string{$this->clock->now+=$this->translationSeconds;return $this->workers[$this->active]->translate($source,$options);}
         public function writeTexts(array $candidate,string $language,array $changes,bool $exists):void{
             $this->workers[$candidate['item_id']]->writeTexts($candidate,$language,$changes,$exists);

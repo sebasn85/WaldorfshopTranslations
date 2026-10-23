@@ -5,10 +5,13 @@ namespace WaldorfshopTranslations\Core;
 class ProcessingPause extends \RuntimeException
 {
     private $reason;
-    public function __construct(string $reason, string $message)
+    private $confirmedNoCharge;
+    public function __construct(string $reason, string $message, bool $confirmedNoCharge = false)
     {
         parent::__construct($message);
         $this->reason = $reason;
+        $this->confirmedNoCharge = $confirmedNoCharge;
     }
+    public function confirmedNoCharge(): bool { return $this->confirmedNoCharge; }
     public function reason(): string { return $this->reason; }
 }

@@ -85,6 +85,10 @@ class NightlyBatch
                     return $issue;
                 }
                 return $this->pause($run, $error);
+            } catch (\Throwable $error) {
+                $issue = TranslationIssue::details($error) + ['status'=>'configuration_blocked', 'day'=>$day, 'phase'=>'preflight'];
+                $this->store->put('nightly-last-issue', $issue);
+                return $issue;
             }
             $attempts = 0;
             $pages = [];
@@ -125,7 +129,7 @@ class NightlyBatch
                     return $this->pause($run, $error);
                 } catch (\Throwable $error) {
                     $run['failed']++;
-                    $run['last_issue'] = ['item_id'=>$candidate['item_id'], 'reason'=>'article', 'message'=>$error->getMessage()];
+                    $run['last_issue'] = ['item_id'=>$candidate['item_id'], 'reason'=>'article'] + TranslationIssue::details($error);
                 }
                 $run['cursor']++;
                 $run['in_flight'] = null;

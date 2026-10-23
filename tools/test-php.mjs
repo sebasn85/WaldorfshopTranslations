@@ -11,9 +11,9 @@ async function copy(dir) {
   for (const entry of await fs.readdir(path.join(root, dir), { withFileTypes: true })) {
     const relative = path.posix.join(dir, entry.name);
     if (entry.isDirectory()) await copy(relative);
-    else if (entry.name.endsWith('.php')) {
+    else if (entry.name.endsWith('.php') || entry.name.endsWith('.json')) {
       await php.writeFile('/app/' + relative, await fs.readFile(path.join(root, relative)));
-      files.push(relative);
+      if (entry.name.endsWith('.php')) files.push(relative);
     }
   }
 }
