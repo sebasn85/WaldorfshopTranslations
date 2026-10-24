@@ -2,7 +2,7 @@
   "name": "WaldorfshopTranslations",
   "namespace": "WaldorfshopTranslations",
   "type": "general",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "license": "proprietary",
   "isClosedSource": true,
   "description": "Konfigurierbare Plenty-Artikelübersetzung mit DeepL, Glossar und feldweisem Änderungsvergleich.",
@@ -15,3 +15,4 @@
     "guzzlehttp/guzzle": "7.15.5"
   }
 }
+
