@@ -44,8 +44,8 @@ namespace {
     {
         public $runs = 0;
         public function __construct() {}
-        public function recoveryPreview(int $id, array $corrections=[]): array { $this->runs++; return ['item_id'=>$id]; }
-        public function recoveryResume(int $id,string $token,array $corrections=[]): array { $this->runs++; return ['item_id'=>$id]; }
+        public function recoveryPreview(int $id, array $corrections=[], array $retainEmptySource=[]): array { $this->runs++; return ['item_id'=>$id]; }
+        public function recoveryResume(int $id,string $token,array $corrections=[], array $retainEmptySource=[]): array { $this->runs++; return ['item_id'=>$id]; }
         public function providerUsage(): array { $this->runs++; return ['character_count'=>0]; }
         public function pilot(): array { $this->runs++; return ['status' => 'allowed']; }
     }

@@ -1,4 +1,9 @@
-# WaldorfshopTranslations 0.4.0
+# WaldorfshopTranslations 0.5.0 (unveröffentlicht)
+
+Der Korrekturstand 0.5.0 ist lokal vorbereitet. Plenty-Testbuild und gesonderte Live-Freigabe stehen aus.
+
+Bei der geschützten Wiederaufnahme kann `retainEmptySource` ausdrücklich vorhandene Fremdtexte bei leerem Deutsch beibehalten, zum Beispiel `{"en":["technicalData"],"fr":["technicalData"]}`. Dieselbe Auswahl muss in Vorschau und Wiederaufnahme übergeben werden. Die Vorschau speichert nichts; erst eine gültige, aktuelle Rücklese-Freigabe übernimmt den Vergleichsstand. Die Freigabe bindet sämtliche deutschen Quellfelder, den unveränderten Zieltext und die Verarbeitungspolitik. Änderungen erfordern eine neue Prüfung. Ohne diese Auswahl bleibt die bisherige Sperre bestehen; es werden weder technische Daten gelöscht noch leere deutsche Felder automatisch ergänzt.
+
 
 Konfigurierbares Plenty-Plugin für deutsche Artikeltexte → ausgewählte Zielsprachen mit DeepL. Version 0.4.0 ergänzt geprüfte Wiederaufnahme, nachvollziehbare Fehler und eine getrennte Verbrauchsanzeige. Die Plenty-Prüfung erfolgt ausschließlich in einem unverknüpften Testset. Eine Live-Bereitstellung benötigt eine eigene Freigabe.
 
@@ -75,7 +80,7 @@ Erforderliche Plenty-Rechte: Artikel und Varianten lesen; Artikeltexte lesen, er
 
 ## Tests und Veröffentlichung
 
-`php tests/run.php` führt 133 Regressionstests aus. Enthalten sind eine simulierte Warteschlange mit 120 Artikeln, Fortsetzung zwischen Paketen, Sommer-/Winterzeit, Tageswechsel, entfernte Tags, einzelne Artikelfehler, API-/Budgetpausen, ein Prozessabbruch nach erfolgreicher Artikelübernahme und die vorhandenen Schutzprüfungen. Runner, Übersetzungs-Engine und HTTP-Grenze werden dabei mit ersetzten externen Schnittstellen tatsächlich ausgeführt. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins. Die lokalen Tests ersetzen weder den Plenty-Codecheck noch einen Testbuild in einem nachweislich unverknüpften Set.
+`php tests/run.php` führt 144 Regressionstests aus. Enthalten sind eine simulierte Warteschlange mit 120 Artikeln, Fortsetzung zwischen Paketen, Sommer-/Winterzeit, Tageswechsel, entfernte Tags, einzelne Artikelfehler, API-/Budgetpausen, ein Prozessabbruch nach erfolgreicher Artikelübernahme und die vorhandenen Schutzprüfungen. Runner, Übersetzungs-Engine und HTTP-Grenze werden dabei mit ersetzten externen Schnittstellen tatsächlich ausgeführt. Lokal alternativ `node tools/test-php.mjs` mit den offiziellen WordPress-Playground-Paketen `@php-wasm/universal` und `@php-wasm/node-8-3` (3.1.58). Die Testlaufzeit ist kein Bestandteil des Plenty-Plugins. Die lokalen Tests ersetzen weder den Plenty-Codecheck noch einen Testbuild in einem nachweislich unverknüpften Set.
 
 Die Marketplace-Veröffentlichung ist ein separater Schritt: Partnerregistrierung, endgültiger Produktname, Kategorie und Produktmetadaten, Supportkontakt, vollständige DE-/EN-Anleitung, Paketprüfung, Reviewzugänge und Plenty-Review. Diese Entwicklungsversion wurde nicht eingereicht und ist keine Marketplace-Zulassung. Die historischen Klassen `Glossary` und `InitialBudget` aus dem privaten Pilot werden seit 0.2.0 nicht mehr zur Laufzeit verwendet und sind vor einer öffentlichen Paketabgabe zu bereinigen.
 

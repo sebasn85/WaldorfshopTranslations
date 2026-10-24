@@ -4,6 +4,8 @@ use WaldorfshopTranslations\Core\TranslationEngine;
 use WaldorfshopTranslations\Core\NightlyBatch;
 use WaldorfshopTranslations\Core\RecoveryReview;
 use WaldorfshopTranslations\Core\TranslationIssue;
+use WaldorfshopTranslations\Core\EmptySourceReview;
+use WaldorfshopTranslations\Core\ReviewStore;
 use WaldorfshopTranslations\Repositories\StateRepository;
 
 class Runner
@@ -69,11 +71,26 @@ class Runner
         }
         throw new TranslationIssue('trigger_missing', 'Artikel trägt keinen aktuellen Auslöser-Tag.');
     }
-    public function recoveryPreview(int $itemId, array $corrections = []): array
+    private function reviewedRecovery(array $settings, array $candidate, array $corrections, array $retainEmptySource): array
     {
-        return RecoveryReview::inspect($this->store, $this->gateway, $this->settings(), $this->recoveryCandidate($itemId), $corrections);
+        $key = 'baseline:' . $candidate['item_id'];
+        $before = $this->store->get($key) ?? []; $after = $before; $readStore = $this->store;
+        if ($retainEmptySource) {
+            $engine = pluginApp(TranslationEngine::class, [$this->store, $this->gateway, $settings]);
+            $after = EmptySourceReview::baseline($before, $engine->plan($candidate), $retainEmptySource, $settings['operator_user_id']);
+            $readStore = pluginApp(ReviewStore::class, [$this->store]);
+            $readStore->put($key, $after);
+        }
+        $review = RecoveryReview::inspect($readStore, $this->gateway, $settings, $candidate, $corrections);
+        $review['review_token'] = TranslationEngine::hash([$review['review_token'], $retainEmptySource, $before]);
+        $review['retain_empty_source'] = $retainEmptySource;
+        return ['review'=>$review, 'baseline'=>$after, 'baseline_changed'=>$after !== $before];
     }
-    public function recoveryResume(int $itemId, string $token, array $corrections = []): array
+    public function recoveryPreview(int $itemId, array $corrections = [], array $retainEmptySource = []): array
+    {
+        return $this->reviewedRecovery($this->settings(), $this->recoveryCandidate($itemId), $corrections, $retainEmptySource)['review'];
+    }
+    public function recoveryResume(int $itemId, string $token, array $corrections = [], array $retainEmptySource = []): array
     {
         if ($this->http->option('writesAllowed', '0') !== '1') { throw new TranslationIssue('writes_disabled', 'Speichern ist ausgeschaltet.'); }
         if (!preg_match('/^[a-f0-9]{64}$/D', $token)) { throw new TranslationIssue('review_required', 'Aktuelle Rücklese-Freigabe erforderlich.'); }
@@ -81,12 +98,16 @@ class Runner
         $this->http->setDeadline($this->now() + NightlyBatch::MAX_SECONDS);
         try {
             $settings = $this->settings(); $candidate = $this->recoveryCandidate($itemId);
-            $review = RecoveryReview::inspect($this->store, $this->gateway, $settings, $candidate, $corrections);
+            $prepared = $this->reviewedRecovery($settings, $candidate, $corrections, $retainEmptySource);
+            $review = $prepared['review'];
             if (!$review['can_resume'] || $review['review_token'] !== $token) {
                 throw new TranslationIssue('review_stale', 'Auftrag oder Texte geändert oder weiterhin prüfpflichtig. Erneut prüfen.');
             }
-            if ($corrections) {
-                $corrected = RecoveryReview::correctedJob($this->store->get('job:' . $itemId), $settings, $corrections);
+            if ($prepared['baseline_changed']) { $this->store->put('baseline:' . $itemId, $prepared['baseline']); }
+            $pending = $this->store->get('job:' . $itemId);
+            if ($corrections || $retainEmptySource || !empty($pending['conflicts'])) {
+                $corrected = RecoveryReview::correctedJob($pending, $settings, $corrections);
+                if (!empty($corrected['conflicts'])) { $corrected['resolved_conflicts'] = $corrected['conflicts']; $corrected['conflicts'] = []; }
                 $corrected['reviewed_by'] = (int)$this->http->option('operatorUserId', '0');
                 $this->store->put('job:' . $itemId, $corrected);
             }

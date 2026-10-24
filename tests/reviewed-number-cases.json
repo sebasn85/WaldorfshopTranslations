@@ -1,0 +1,56 @@
+[
+  {
+    "synthetic": true,
+    "language": "fr",
+    "field": "name2",
+    "source": "2000 Bausteine",
+    "rejected": "2 000 blocs",
+    "replacement": "2000 blocs"
+  },
+  {
+    "synthetic": true,
+    "language": "fr",
+    "field": "name2",
+    "source": "dreidimensional",
+    "rejected": "en 3D",
+    "replacement": "en trois dimensions"
+  },
+  {
+    "synthetic": true,
+    "language": "en",
+    "field": "description",
+    "source": "<h3>Beispiel im 4er-Set</h3>",
+    "rejected": "<h3>Example in a set of four</h3>",
+    "replacement": "<h3>Example in a set of 4</h3>"
+  },
+  {
+    "synthetic": true,
+    "supplier_code": "10.20.301",
+    "language": "en",
+    "field": "metaKeywords",
+    "source": "Beispielmarke, Docht 2 3 mm, 10.20.301, 40 Stueck, 7 cm",
+    "source_replacement": "Beispielmarke, Docht 2,3 mm, 10.20.301, 40 Stueck, 7 cm",
+    "rejected": "Example brand, wick 2.3 mm, 10.20.301, 40 pieces, 7 cm",
+    "replacement": "Example brand, wick 2.3 mm, 10.20.301, 40 pieces, 7 cm"
+  },
+  {
+    "synthetic": true,
+    "supplier_code": "10.20.302",
+    "language": "en",
+    "field": "metaKeywords",
+    "source": "Beispielmarke, Docht 2 3 mm, 10.20.302, 50 Stueck, 8 cm",
+    "source_replacement": "Beispielmarke, Docht 2,3 mm, 10.20.302, 50 Stueck, 8 cm",
+    "rejected": "Example brand, wick 2.3 mm, 10.20.302, 50 pieces, 8 cm",
+    "replacement": "Example brand, wick 2.3 mm, 10.20.302, 50 pieces, 8 cm"
+  },
+  {
+    "synthetic": true,
+    "supplier_code": "10.20.303",
+    "language": "en",
+    "field": "metaKeywords",
+    "source": "Beispielmarke, Docht 2 3 mm, 10.20.303, 60 Stueck, 9 cm",
+    "source_replacement": "Beispielmarke, Docht 2,3 mm, 10.20.303, 60 Stueck, 9 cm",
+    "rejected": "Example brand, wick 2.3 mm, 10.20.303, 60 pieces, 9 cm",
+    "replacement": "Example brand, wick 2.3 mm, 10.20.303, 60 pieces, 9 cm"
+  }
+]

@@ -2,6 +2,7 @@
 namespace WaldorfshopTranslations\Migrations;
 use WaldorfshopTranslations\Core\TranslationEngine;
 use WaldorfshopTranslations\Core\TranslationIssue;
+use WaldorfshopTranslations\Core\EmptySourceReview;
 
 /** SDK smoke check: no database, API, credentials, tags or article changes. */
 class CheckRecoveryRuntime
@@ -17,5 +18,11 @@ class CheckRecoveryRuntime
         try { throw new TranslationIssue('probe', 'Prüfung'); }
         catch (TranslationIssue $error) { $issue = TranslationIssue::details($error); }
         if (($issue['code'] ?? '') !== 'probe') { throw new \RuntimeException('Fehlerdiagnose im SDK fehlgeschlagen.'); }
+        $plan = ['source'=>['technicalData'=>''], 'policy'=>['version'=>2], 'targets'=>['en'=>['before'=>['technicalData'=>'<p>Existing facts</p>']]]];
+        $baseline = EmptySourceReview::baseline([], $plan, ['en'=>['technicalData']], 1);
+        if (!EmptySourceReview::accepted($baseline['en']['technicalData'], '', '<p>Existing facts</p>', $plan['source'], $plan['policy'])
+            || EmptySourceReview::accepted($baseline['en']['technicalData'], '', '<p>Changed facts</p>', $plan['source'], $plan['policy'])) {
+            throw new \RuntimeException('Freigabe leerer Quellen im SDK fehlgeschlagen.');
+        }
     }
 }

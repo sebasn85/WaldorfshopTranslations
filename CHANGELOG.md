@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.4.0 — 2026-10-23 (isolated test release)
+## 0.5.0 — 2026-10-24 (local preparation, not deployed)
+
+- Explicit, context-bound approval to keep existing translated fields when German is empty. No automatic acceptance or deletion.
+- Read-only previews use an overlay; approval choices and original baselines are part of the review token.
+- Clear stored conflicts only after a fresh successful review; clear historical validation errors after the recovered job completes.
+- Added synthetic numeric spelling examples that verify reviewed corrections without relaxing number validation.
+- 144 local tests pass. Plenty runtime verification and live approval remain outstanding.
+
+## 0.4.0 — 2026-10-24 (recovery and budget safeguards)
 
 - Add operator-only recovery previews and token-bound resumes, including validated, explicitly reviewed field corrections. Existing paid cache entries remain reusable. No bulk unblock, automatic deletion or build-time recovery.
 - Revalidate prepared fields before applying them. Accept only equivalent HTML quoting, attribute order and void-tag notation while preserving tags, attributes, links and numeric checks.

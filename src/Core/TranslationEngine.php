@@ -145,7 +145,7 @@ class TranslationEngine
                 $old = $baseline[$lang][$field] ?? null;
                 if (self::blank($source[$field])) {
                     $reasons[$field] = 'source_empty';
-                    if (!self::blank($before[$field])) {
+                    if (!self::blank($before[$field]) && !EmptySourceReview::accepted($old ?? [], $source[$field], $before[$field], $source, $this->settings['policy'])) {
                         $conflicts[] = $lang . ':' . $field . ':source_removed';
                     }
                 } elseif (self::blank($before[$field])) {
@@ -316,7 +316,7 @@ class TranslationEngine
             $job['tagging_started'] = true; $job['status'] = 'tagging'; $this->store->put($key, $job);
             foreach ($candidate['tagged_variation_ids'] as $id) { $this->gateway->addReviewTag($id); }
             foreach ($candidate['tagged_variation_ids'] as $id) { $this->gateway->removeTrigger($id); }
-            $job['status'] = 'complete'; unset($job['error'], $job['failure'], $job['active_language'], $job['active_field']); $this->store->put($key, $job);
+            $job['status'] = 'complete'; unset($job['error'], $job['failure'], $job['validation_error'], $job['active_language'], $job['active_field']); $this->store->put($key, $job);
             return ['item_id' => $candidate['item_id'], 'status' => 'complete'];
         } catch (\Throwable $error) {
             $job['status'] = $error instanceof ProcessingPause ? 'paused' : 'blocked';

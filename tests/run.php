@@ -3,6 +3,8 @@ require __DIR__ . '/../src/Core/ProcessingPause.php';
 require __DIR__ . '/../src/Core/NightlyBatch.php';
 require __DIR__ . '/../src/Core/TranslationIssue.php';
 require __DIR__ . '/../src/Core/RecoveryReview.php';
+require __DIR__ . '/../src/Core/ReviewStore.php';
+require __DIR__ . '/../src/Core/EmptySourceReview.php';
 require __DIR__ . '/../src/Core/TranslationEngine.php';
 require __DIR__ . '/../src/Migrations/CheckNightlyRuntime.php';
 use WaldorfshopTranslations\Core\TranslationEngine as Engine;
@@ -163,6 +165,8 @@ require __DIR__ . '/../src/Diagnostics/ReplayStore.php';
 require __DIR__ . '/../src/Diagnostics/ReplayGateway.php';
 require __DIR__ . '/recovery-fixture.php';
 $tests += recoveryTests();
+require __DIR__ . '/retained-source-fixture.php';
+$tests += retainedSourceTests();
 $failed=0;
 foreach($tests as $name=>$test){try{$test();echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: ".$e->getMessage()."\n";}}
 echo count($tests)." tests; $failed failures\n";
