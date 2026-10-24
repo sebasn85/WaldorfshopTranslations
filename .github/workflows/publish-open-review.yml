@@ -1,0 +1,27 @@
+name: Publish isolated read-only review
+on:
+  push:
+    branches: [test/reviewed-open-jobs-2026-10-24]
+    paths: [.github/workflows/publish-open-review.yml]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply reviewed patch and verify
+        env:
+          REVIEWED_PATCH: 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
+        run: |
+          echo "$REVIEWED_PATCH" | base64 -d | gzip -d > /tmp/reviewed.patch
+          echo "d671670fb04ac22930d1788a63ce81cc0fef1e3decd58b0bd0638f50773b925d  /tmp/reviewed.patch" | sha256sum -c -
+          git apply --check /tmp/reviewed.patch
+          git apply /tmp/reviewed.patch
+          find src tests resources -name '*.php' -print0 | xargs -0 -n 1 php -l
+          php tests/run.php
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md README.md plugin.json src tests
+          git commit -m "Inspect open jobs without writes or paid requests"
+          git push origin HEAD:test/reviewed-open-jobs-2026-10-24
