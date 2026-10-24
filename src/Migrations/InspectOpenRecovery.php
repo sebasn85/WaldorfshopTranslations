@@ -65,6 +65,6 @@ class InspectOpenRecovery
             }
         } catch (\Throwable $error) { $report['issue']=TranslationIssue::details($error); }
         $http->setDeadline(0);
-        $this->getLogger('OpenRecoveryV051')->info('Read-only open-job recovery review',['report_json'=>json_encode($report,JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+        $this->getLogger('OpenRecoveryV051')->error('READ ONLY DIAGNOSTIC: open-job recovery review',['report_json'=>json_encode($report,JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
     }
 }
