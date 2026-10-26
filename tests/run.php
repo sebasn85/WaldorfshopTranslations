@@ -167,6 +167,9 @@ require __DIR__ . '/recovery-fixture.php';
 $tests += recoveryTests();
 require __DIR__ . '/retained-source-fixture.php';
 $tests += retainedSourceTests();
+require __DIR__ . '/../src/Diagnostics/SnapshotReviewStore.php';
+require __DIR__ . '/snapshot-fixture.php';
+$tests += snapshotTests();
 $failed=0;
 foreach($tests as $name=>$test){try{$test();echo "PASS $name\n";}catch(Throwable $e){$failed++;echo "FAIL $name: ".$e->getMessage()."\n";}}
 echo count($tests)." tests; $failed failures\n";
