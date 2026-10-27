@@ -12,10 +12,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Apply reviewed patch and verify
         env:
-          REVIEWED_PATCH: H4sIAAAAAAACA+VVyW7bMBC9+ysIw4cEWiypkdMmXZImQFK0QYOkRQ91D5Q0ktnQFEFSdp0it35Wb/mxjjY7O5zGl6I6jYbD90bDx6eEpSlxnIwZQvuSFxkT7nedCxJdfeswkcAPEsRpOnjhuW7ob1IKAfE9b7Cx0XEc5/rujmVZNxB2dogT2IFPrMD2Q7Kz0yGEdAUdQ3eLdL9QnuQq1aNcflJUaE4Ny4Xu2vMqLWm8RKmZyaoqAwGKcsw6mJ2A0lhULnhu6IaYtm6nBw0GZzEIXcFIlUvFwFA1axaZ3uO5huQ0L1TVkFEF1EsJ6FgxaRrI97lIWVbgdhVRBeSYgzAzZ1cZdgb88neE7GDOC5GRMY5/H0B+sMkBomuqSCESkgJPpsA0jMnlLzwBhbUam844sHjkNh3RwoxyVTJ+Fqz8JEFNocjBODpsKjSoCX7TsconDFEemOJw2BZheGXh9AZCjYv9fBRvC8YThPxaTpo8gHzEMtXG74SWEJsTiHPseHZajtyrD+spEP4KMIIVYDxbAcbGCjDCFWAMVoCx6XXLC7csBO4dQXx2+1ieiIHjKHX7rb2uEvBSiZiBRv3+LJOYzorzcw4jY2S/Dsvrsun6pW10kqt2qVXcX1D27+7alSOJVrh0bUfAlKSMAxnnCbQOW/uvVz+um9IgohGtjLefwKQvCs4b012eqbRkz/aI5du+Vzqy9fJNmbfmfkvuG/WCYLtjFbo1t+FRnhQc9PC4cv7hPjX0LdUw3MuFUTQ2ep5q9t1H0BiOHh5QA1M6W7b8EM9tjzNsBnfEnGpN7p4AnnelJllEmCBpIeISiqCnrbU9kl6CUYQR+nLdB+lldWCTBRXplXJZbyHLp6dgwmD6qv4F7kq5do3/pFrd2qo6XN9uy53XrL49awvmOWFFYgfe+nZNc9GxLh4tyPARggyXF+RzoEkUwd8KMvzvBRn+s4IMrwvyDw8J5WRRCgAA
+          REVIEWED_PATCH: H4sIAAAAAAACA6WSwW7bMAyG734KwlfHrp3VCbpT2g3ohm1YsazYYd1BsWlbqyIJlJQt2bWP1VtfbHTsDG0HFAV6samfvz5RpGrZNJCmrfQgjqwKrdTZT2c0rO6vIqlr/A1lMRcCp1k2LfKTV00ORZ7Pjo+jNE0f7o6SJHlEWCwgnU6KEpL9d7GIACDWYo3xa4i/CVUbalxn7FcS2inhpdEunvxzOSuqZ1j91u5dLWokoVhNWd0gOTb1iTwrsxnLyf/yfGQoWaF2e4wlY0miF7Qdk9K9UcZhvTSB9gV5CjikanQVSetH5AejG9kG3k4rQQgXCrXfpqfk5TWqu9sVn45+F3QLa27/W0T7cQLnTHeCIOgaGlT1L5QO13B3wxMg9jouulUoqy4bKxLBd4b6Ey+17K+khQ8E5+vVu9HhkDZ8pwsyG8mUJ7p4dXUwcXgvsXxEGLhcz2d9FqSqGfm97zQ8Qf4kWzrEX7DqsLrmn+GKt8u+5dN8mNZLGGUe95N9LuK9dhYr/wAxy4fX8RLGnMtgwI/Du7DI09OVRMeN+tOLLLdht1PYeW+PhrCfyzwryqyMo7/6Hzy0mAMAAA==
         run: |
           echo "$REVIEWED_PATCH" | base64 -d | gzip -d > /tmp/reviewed.patch
-          echo "892cd46804fdbd22a4dda8ad1979a8a485f0b87ea670376980cef8950ec7a825  /tmp/reviewed.patch" | sha256sum -c -
+          echo "277ff3b82399a7d04a4e1ea2b306aebb8ac5da20f4732da1104b8c53e2d57d6c  /tmp/reviewed.patch" | sha256sum -c -
           git apply --check /tmp/reviewed.patch
           git apply /tmp/reviewed.patch
           find src tests resources -name '*.php' -print0 | xargs -0 -n 1 php -l
@@ -23,5 +23,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md README.md plugin.json src tests
-          git commit -m "Recheck incomplete read-only recovery slices"
+          git commit -m "Inspect final read-only recovery slices"
           git push origin HEAD:test/reviewed-open-jobs-2026-10-24
